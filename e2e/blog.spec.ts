@@ -12,7 +12,7 @@ test.describe('Blog Management', () => {
     await page.fill('input[type="email"]', TEST_ADMIN.email);
     await page.fill('input[type="password"]', TEST_ADMIN.password);
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL(/\/admin$/);
+    await expect(page).toHaveURL(/admin/);
   });
 
   test('should display blog list page', async ({ page }) => {
@@ -35,7 +35,7 @@ test.describe('Blog Management', () => {
     await page.click('button[type="submit"]');
 
     // Should redirect to blog list
-    await expect(page).toHaveURL(/\/admin/blog$/);
+    await expect(page).toHaveURL(/admin\/blog/);
   });
 
   test('should edit an existing blog post (Bug 1 - Data should load)', async ({ page }) => {

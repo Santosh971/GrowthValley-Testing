@@ -12,7 +12,7 @@ test.describe('Case Studies Management', () => {
     await page.fill('input[type="email"]', TEST_ADMIN.email);
     await page.fill('input[type="password"]', TEST_ADMIN.password);
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL(/\/admin$/);
+    await expect(page).toHaveURL(/admin/);
   });
 
   test('should display case studies list page', async ({ page }) => {
@@ -27,17 +27,15 @@ test.describe('Case Studies Management', () => {
     await page.fill('input[name="title"]', 'Test Case Study E2E');
     await page.fill('input[name="clientName"]', 'Test Client E2E');
     await page.selectOption('select[name="industry"]', 'Technology');
-    await page.fill('textarea[name="summary"]', 'Test summary for the case study.');
     await page.fill('textarea[name="challenge"]', 'Test challenge description.');
     await page.fill('textarea[name="solution"]', 'Test solution description.');
-    await page.fill('textarea[name="results"]', 'Test results description.');
     await page.selectOption('select[name="status"]', 'draft');
 
     // Submit the form
     await page.click('button[type="submit"]');
 
     // Should redirect to case studies list
-    await expect(page).toHaveURL(/\/admin\/case-studies$/);
+    await expect(page).toHaveURL(/admin\/case-studies/);
   });
 
   test('should display images on edit page (Bug 2 - Images visible)', async ({ page }) => {

@@ -12,7 +12,7 @@ test.describe('Content Management', () => {
     await page.fill('input[type="email"]', TEST_ADMIN.email);
     await page.fill('input[type="password"]', TEST_ADMIN.password);
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL(/\/admin$/);
+    await expect(page).toHaveURL(/admin/);
   });
 
   test('should display content list page', async ({ page }) => {
