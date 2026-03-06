@@ -46,24 +46,24 @@ export default function IndustriesClient({ hero, industries, cta }: IndustriesCl
       <section className="relative py-20 bg-white dark:bg-brand-grey-950 overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-grid-pattern" />
-        
+
         {/* Floating Elements */}
-        <motion.div 
+        <motion.div
           className="absolute top-20 right-10 w-4 h-4 bg-accent/20 rotate-45"
           animate={{ rotate: [45, 90, 45], y: [0, -20, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div 
+        <motion.div
           className="absolute top-1/3 left-10 w-3 h-3 bg-accent/15 rounded-full"
           animate={{ scale: [1, 1.5, 1] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div 
+        <motion.div
           className="absolute bottom-1/4 right-1/4 w-2 h-2 bg-accent/25 rounded-full"
           animate={{ y: [0, -15, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
-        
+
         <Container className="relative z-10">
           <div className="space-y-24">
             {industries?.map((industry, index) => (
@@ -74,20 +74,19 @@ export default function IndustriesClient({ hero, industries, cta }: IndustriesCl
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.6, delay: 0.1 }}
-                className={`grid lg:grid-cols-5 gap-8 lg:gap-12 ${
-                  index % 2 === 1 ? "lg:grid-flow-dense" : ""
-                }`}
+                className={`grid lg:grid-cols-5 gap-8 lg:gap-12 ${index % 2 === 1 ? "lg:grid-flow-dense" : ""
+                  }`}
               >
                 {/* Left side - Industry header */}
                 <div className={`lg:col-span-2 ${index % 2 === 1 ? "lg:col-start-4" : ""}`}>
-                  <motion.div 
+                  <motion.div
                     className="flex items-center gap-4 mb-4"
                     initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.2 }}
                   >
-                    <motion.span 
+                    <motion.span
                       className="text-5xl"
                       whileHover={{ scale: 1.2, rotate: 10 }}
                       transition={{ type: 'spring', stiffness: 300 }}
@@ -98,10 +97,10 @@ export default function IndustriesClient({ hero, industries, cta }: IndustriesCl
                       {industry.name}
                     </h2>
                   </motion.div>
-                  <p className="text-body text-brand-grey-500 dark:text-brand-grey-400 mb-6">
+                  <p className="text-body text-left text-brand-grey-500 dark:text-brand-grey-400 mb-6">
                     {industry.description}
                   </p>
-                  <motion.div 
+                  <motion.div
                     className="flex items-center gap-2 text-label text-accent"
                     whileHover={{ scale: 1.05 }}
                   >
@@ -113,7 +112,7 @@ export default function IndustriesClient({ hero, industries, cta }: IndustriesCl
                 {/* Right side - Challenges and Results */}
                 <div className={`lg:col-span-3 grid md:grid-cols-2 gap-8 ${index % 2 === 1 ? "lg:col-start-1 lg:row-start-1" : ""}`}>
                   {/* Challenges */}
-                  <motion.div 
+                  <motion.div
                     className="bg-brand-grey-50 dark:bg-brand-grey-900 p-6 relative overflow-hidden"
                     initial={{ opacity: 0, x: -30 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -142,7 +141,7 @@ export default function IndustriesClient({ hero, industries, cta }: IndustriesCl
                   </motion.div>
 
                   {/* Results */}
-                  <motion.div 
+                  <motion.div
                     className="bg-brand-black dark:bg-brand-grey-800 p-6 text-white relative overflow-hidden"
                     initial={{ opacity: 0, x: 30 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -152,7 +151,7 @@ export default function IndustriesClient({ hero, industries, cta }: IndustriesCl
                   >
                     {/* Accent decoration */}
                     <div className="absolute top-0 right-0 w-20 h-20 bg-accent/10" />
-                    
+
                     <h4 className="text-label text-brand-grey-400 uppercase mb-4 relative z-10">
                       Typical Results
                     </h4>
@@ -188,21 +187,21 @@ export default function IndustriesClient({ hero, industries, cta }: IndustriesCl
       <section className="relative py-24 bg-brand-grey-50 dark:bg-brand-grey-900 overflow-hidden">
         {/* Animated Background */}
         <div className="absolute inset-0 bg-animated-gradient" />
-        
+
         {/* Floating Shapes */}
-        <motion.div 
+        <motion.div
           className="absolute top-10 left-1/4 w-4 h-4 bg-accent/30 rounded-full"
           animate={{ y: [0, -30, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div 
+        <motion.div
           className="absolute bottom-20 right-1/3 w-3 h-3 bg-accent/25 rotate-45"
           animate={{ rotate: [45, 90, 45] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         />
-        
+
         <Container className="relative z-10">
-          <motion.div 
+          <motion.div
             className="max-w-3xl mx-auto text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -212,7 +211,7 @@ export default function IndustriesClient({ hero, industries, cta }: IndustriesCl
             <h2 className="text-heading-2 text-brand-black dark:text-white mb-6">
               {cta?.title || "Don't see your industry?"}
             </h2>
-            <p className="text-body-lg text-brand-grey-500 dark:text-brand-grey-400 mb-10">
+            <p className="text-body-lg text-left text-brand-grey-500 dark:text-brand-grey-400 mb-10">
               {cta?.description || "Our methodology applies across B2B sectors. If you sell to businesses, we can help transform your revenue operations."}
             </p>
             <motion.div

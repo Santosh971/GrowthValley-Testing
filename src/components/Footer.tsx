@@ -29,7 +29,7 @@ export default function Footer() {
   const { settings } = useSettings();
   const { logo: footerLogo, hasLogo, siteName } = useLogo();
   const currentYear = new Date().getFullYear();
-  
+
   const socialLinks = settings?.socialLinks || {};
   const copyrightText = settings?.footer?.copyrightText || `© ${currentYear} ${siteName}. All rights reserved.`;
 
@@ -38,7 +38,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
           {/* Brand Column */}
-          <motion.div 
+          <motion.div
             className="lg:col-span-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -47,8 +47,8 @@ export default function Footer() {
           >
             <Link href="/" className="inline-block mb-6">
               {hasLogo && footerLogo ? (
-                <img 
-                  src={footerLogo} 
+                <img
+                  src={footerLogo}
                   alt={siteName}
                   className="h-8 w-auto"
                 />
@@ -58,7 +58,7 @@ export default function Footer() {
                 </span>
               )}
             </Link>
-            <p className="text-brand-grey-400 dark:text-brand-grey-500 text-body mb-6 max-w-sm">
+            <p className="text-brand-grey-400 text-left dark:text-brand-grey-500 text-body mb-6 max-w-sm">
               {settings?.siteDescription || "Predictable Revenue Systems for Scalable Businesses. We help B2B companies transform their revenue operations."}
             </p>
             <div className="flex gap-4">
@@ -214,7 +214,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <motion.div 
+        <motion.div
           className="mt-12 pt-8 border-t border-brand-grey-800 dark:border-brand-grey-200"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

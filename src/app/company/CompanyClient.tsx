@@ -103,7 +103,7 @@ export default function CompanyClient({ mission, origin, teamMembers, values, ap
               ).map((paragraph, idx) => (
                 <motion.p
                   key={`mission-paragraph-${idx}`}
-                  className="text-body-lg text-brand-grey-600 dark:text-brand-grey-300 leading-relaxed mb-6"
+                  className="text-body-lg text-left text-brand-grey-600 dark:text-brand-grey-300 leading-relaxed mb-6"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -130,7 +130,7 @@ export default function CompanyClient({ mission, origin, teamMembers, values, ap
               <h3 className="text-heading-3 text-brand-black dark:text-white mb-4 relative z-10">
                 {origin?.title || "The Origin"}
               </h3>
-              <p className="text-body text-brand-grey-600 dark:text-brand-grey-300 leading-relaxed relative z-10">
+              <p className="text-body text-brand-grey-600 text-left dark:text-brand-grey-300 leading-relaxed relative z-10">
                 {origin?.content || "After years of leading revenue operations for high-growth B2B companies, our founding team saw the same patterns repeat: great teams hampered by broken systems. They set out to build the firm they wished existed—a partner that could diagnose the real problems and build lasting solutions."}
               </p>
             </motion.div>
@@ -262,7 +262,7 @@ export default function CompanyClient({ mission, origin, teamMembers, values, ap
             <h2 className="text-heading-2 text-brand-black dark:text-white mb-4">
               {values?.title || "What We Believe"}
             </h2>
-            <p className="text-body-lg text-brand-grey-500 dark:text-brand-grey-400 max-w-2xl mx-auto">
+            <p className="text-body-lg text-center text-brand-grey-500 dark:text-brand-grey-400 max-w-2xl mx-auto">
               {values?.subtitle || "Our values shape how we work with clients and each other."}
             </p>
           </motion.div>
@@ -315,7 +315,7 @@ export default function CompanyClient({ mission, origin, teamMembers, values, ap
             <h2 className="text-heading-2 text-brand-black dark:text-white mb-4">
               {approach?.title || "How We Work"}
             </h2>
-            <p className="text-body-lg text-brand-grey-500 dark:text-brand-grey-400 max-w-2xl mx-auto">
+            <p className="text-body-lg text-left text-brand-grey-500 dark:text-brand-grey-400 max-w-2xl mx-auto">
               {approach?.subtitle || "A partnership approach that creates lasting transformation."}
             </p>
           </motion.div>
@@ -392,7 +392,7 @@ export default function CompanyClient({ mission, origin, teamMembers, values, ap
             <h2 className="text-heading-2 text-brand-black dark:text-white mb-6">
               {cta?.title || "Let's Build Something Together"}
             </h2>
-            <p className="text-body-lg text-brand-grey-500 dark:text-brand-grey-400 mb-10">
+            <p className="text-body-lg text-left text-brand-grey-500 dark:text-brand-grey-400 mb-10">
               {cta?.description || "Every transformation starts with a conversation. We'd love to hear about your revenue challenges."}
             </p>
             <motion.div

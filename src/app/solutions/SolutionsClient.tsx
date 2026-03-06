@@ -108,7 +108,7 @@ export default function SolutionsClient({ hero, solutions, cta }: SolutionsClien
                   <h2 className="text-heading-2 text-brand-black dark:text-white mb-4">
                     {solution.title}
                   </h2>
-                  <p className="text-body-lg text-brand-grey-500 dark:text-brand-grey-400 mb-8">
+                  <p className="text-body-lg text-left text-brand-grey-500 dark:text-brand-grey-400 mb-8">
                     {solution.description}
                   </p>
 
@@ -220,7 +220,7 @@ export default function SolutionsClient({ hero, solutions, cta }: SolutionsClien
             <h2 className="text-heading-2 text-brand-black dark:text-white mb-6">
               {cta?.title || "Not sure which solution you need?"}
             </h2>
-            <p className="text-body-lg text-brand-grey-500 dark:text-brand-grey-400 mb-10">
+            <p className="text-body-lg text-left text-brand-grey-500 dark:text-brand-grey-400 mb-10">
               {cta?.description || "Our discovery process identifies the highest-impact opportunities for your specific situation."}
             </p>
             <motion.div
