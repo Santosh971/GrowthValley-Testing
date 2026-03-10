@@ -70,13 +70,13 @@ const caseStudySchema = new mongoose.Schema({
   },
   industry: {
     type: String,
-    required: [true, 'Industry is required'],
-    enum: ['SaaS', 'E-commerce', 'Healthcare', 'Finance', 'Education', 'Manufacturing', 'Real Estate', 'Technology', 'Other']
+    enum: ['SaaS', 'E-commerce', 'Healthcare', 'Finance', 'Education', 'Manufacturing', 'Real Estate', 'Technology', 'Other'],
+    default: 'Other'
   },
   clientName: {
     type: String,
-    required: [true, 'Client name is required'],
-    trim: true
+    trim: true,
+    default: ''
   },
   clientLogo: {
     type: String,

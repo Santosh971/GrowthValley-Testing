@@ -26,7 +26,6 @@ test.describe('Blog Management', () => {
     // Fill in the form
     await page.fill('input[name="title"]', 'Test Blog Post E2E');
     await page.fill('input[name="slug"]', 'test-blog-post-e2e');
-    await page.fill('textarea[name="excerpt"]', 'This is a test blog post created by E2E test.');
     await page.fill('textarea[name="content"]', 'Full content of the test blog post.');
     await page.selectOption('select[name="category"]', 'Technology');
     await page.selectOption('select[name="status"]', 'draft');
@@ -40,7 +39,7 @@ test.describe('Blog Management', () => {
 
   test('should edit an existing blog post (Bug 1 - Data should load)', async ({ page }) => {
     await page.goto('/admin/blog');
-    
+
     // Click on the first edit link
     const editLink = page.locator('a[href*="/admin/blog/"]').first();
     if (await editLink.isVisible()) {
@@ -49,7 +48,7 @@ test.describe('Blog Management', () => {
       // Wait for form to load - this tests the bug fix
       await expect(page.locator('input[name="title"]')).not.toBeEmpty({ timeout: 5000 });
       await expect(page.locator('input[name="slug"]')).not.toBeEmpty();
-      await expect(page.locator('textarea[name="excerpt"]')).not.toBeEmpty();
+      await expect(page.locator('textarea[name="content"]')).not.toBeEmpty();
     }
   });
 

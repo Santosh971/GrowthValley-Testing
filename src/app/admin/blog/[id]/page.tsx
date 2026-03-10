@@ -1,29 +1,41 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { blogAPI } from '@/lib/admin-api';
+import { blogAPI, mediaAPI } from '@/lib/admin-api';
 import AdminLayout from '../../AdminLayout';
+import { getImageUrl } from '@/lib/utils';
+import ContentBlocksEditor, { ContentBlock } from '@/components/admin/ContentBlocksEditor';
 
 const categories = ['Strategy', 'Automation', 'Performance', 'Technology', 'Growth', 'General'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 export default function EditBlogPage() {
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageRemoved, setImageRemoved] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
-    excerpt: '',
-    content: '',
+    contentBlocks: [] as ContentBlock[],
     category: 'General',
     tags: '',
     status: 'draft',
     featured: false,
+    featuredImageAlt: '',
+    scheduledPublishDate: '',
+    scheduledPublishTime: '',
     seo: {
       metaTitle: '',
       metaDescription: '',
@@ -40,21 +52,38 @@ export default function EditBlogPage() {
       const response = await blogAPI.getById(id);
       if (response.success) {
         const blog = response.data;
+
+        // Parse scheduled publish date for the form
+        let scheduledPublishDate = '';
+        let scheduledPublishTime = '';
+        if (blog.scheduledPublishDate) {
+          const scheduledDate = new Date(blog.scheduledPublishDate);
+          scheduledPublishDate = scheduledDate.toISOString().split('T')[0];
+          scheduledPublishTime = scheduledDate.toTimeString().slice(0, 5);
+        }
+
         setFormData({
           title: blog.title,
           slug: blog.slug,
-          excerpt: blog.excerpt || '',
-          content: blog.content || '',
+          contentBlocks: blog.contentBlocks || [],
           category: blog.category,
           tags: (blog.tags || []).join(', '),
           status: blog.status,
           featured: blog.featured || false,
+          featuredImageAlt: blog.featuredImageAlt || '',
+          scheduledPublishDate,
+          scheduledPublishTime,
           seo: {
             metaTitle: blog.seo?.metaTitle || '',
             metaDescription: blog.seo?.metaDescription || '',
             keywords: (blog.seo?.keywords || []).join(', '),
           },
         });
+        // Set existing image preview if available
+        if (blog.featuredImage) {
+          setImagePreview(blog.featuredImage);
+          setImageRemoved(false);
+        }
       }
     } catch (error) {
       alert('Failed to load blog post');
@@ -64,21 +93,117 @@ export default function EditBlogPage() {
     }
   };
 
+  const validateImage = (file: File): string | null => {
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return 'Invalid file type. Please upload a JPG, JPEG, PNG, or WebP image.';
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return 'File size exceeds 5MB. Please upload a smaller image.';
+    }
+    return null;
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageError(null);
+    const error = validateImage(file);
+    if (error) {
+      setImageError(error);
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setImagePreview(ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleImageUpload = async (): Promise<string | null> => {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) return null;
+
+    setUploadingImage(true);
+    try {
+      const response = await mediaAPI.upload(file, 'blog');
+      if (response.success && response.data?.url) {
+        return response.data.url;
+      }
+      throw new Error('Failed to upload image');
+    } catch (error: any) {
+      setImageError(error.message || 'Failed to upload image');
+      return null;
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setImageError(null);
 
     try {
-      const data = {
-        ...formData,
+      // Determine the featured image URL:
+      // - If image was removed, send null
+      // - If new image was uploaded, use that URL
+      // - Otherwise, keep the existing preview (or no image)
+      let featuredImageUrl: string | null = null;
+
+      if (imageRemoved) {
+        // Image was explicitly removed
+        featuredImageUrl = null;
+      } else if (fileInputRef.current?.files?.[0]) {
+        // New image was uploaded
+        const uploadedUrl = await handleImageUpload();
+        if (uploadedUrl) {
+          featuredImageUrl = uploadedUrl;
+        }
+      } else if (imagePreview) {
+        // Keep existing image
+        featuredImageUrl = imagePreview;
+      }
+
+      const data: any = {
+        title: formData.title,
+        slug: formData.slug,
+        contentBlocks: formData.contentBlocks,
+        category: formData.category,
         tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
+        status: formData.status,
+        featured: formData.featured,
+        featuredImageAlt: formData.featuredImageAlt,
         seo: {
           metaTitle: formData.seo.metaTitle || formData.title,
-          metaDescription: formData.seo.metaDescription || formData.excerpt,
+          metaDescription: formData.seo.metaDescription || formData.contentBlocks.map(b => b.text || (b.items || []).join(' ')).join(' ').substring(0, 160),
           keywords: formData.seo.keywords.split(',').map(k => k.trim()).filter(Boolean),
         },
-        publishDate: formData.status === 'published' ? new Date() : undefined,
       };
+
+      // Handle publish date based on status
+      if (formData.status === 'published') {
+        data.publishDate = new Date();
+        data.scheduledPublishDate = null;
+      } else if (formData.status === 'scheduled' && formData.scheduledPublishDate) {
+        // Combine date and time into a single Date object
+        const dateStr = formData.scheduledPublishDate;
+        const timeStr = formData.scheduledPublishTime || '09:00';
+        data.scheduledPublishDate = new Date(`${dateStr}T${timeStr}:00`);
+        data.publishDate = null;
+      } else {
+        data.publishDate = null;
+        data.scheduledPublishDate = null;
+      }
+
+      // Include featuredImage in the data
+      if (featuredImageUrl) {
+        data.featuredImage = featuredImageUrl;
+      } else if (imageRemoved) {
+        data.featuredImage = '';
+      }
 
       const response = await blogAPI.update(id, data);
       if (response.success) {
@@ -147,35 +272,84 @@ export default function EditBlogPage() {
             </div>
           </div>
 
-          {/* Excerpt */}
+          {/* Featured Image */}
           <div>
             <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">
-              Excerpt *
+              Featured Image
+              <span className="text-brand-grey-400 dark:text-brand-grey-500 font-normal ml-1">(optional but recommended)</span>
             </label>
-            <textarea
-              value={formData.excerpt}
-              onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
-              required
-              rows={3}
-              maxLength={300}
+            <div className="space-y-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleImageSelect}
+                className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-brand-grey-100 dark:file:bg-brand-grey-700 file:text-sm file:font-medium file:text-brand-black dark:file:text-white hover:file:bg-brand-grey-200 dark:hover:file:bg-brand-grey-600 cursor-pointer"
+              />
+              <p className="text-xs text-brand-grey-400 dark:text-brand-grey-500">
+                Accepted formats: JPG, JPEG, PNG, WebP. Max size: 5MB
+              </p>
+
+              {/* Image Preview */}
+              {imagePreview && (
+                <div className="relative mt-3">
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-brand-grey-100 dark:bg-brand-grey-800">
+                    <img
+                      src={imagePreview.startsWith('data:') ? imagePreview : getImageUrl(imagePreview)}
+                      alt="Featured image preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImagePreview(null);
+                      setImageRemoved(true);
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = '';
+                      }
+                    }}
+                    className="absolute top-2 right-2 px-3 py-1 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {imageError && (
+                <p className="text-sm text-red-500 dark:text-red-400">{imageError}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Image Alt Text */}
+          <div>
+            <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">
+              Image Alt Text
+              <span className="text-brand-grey-400 dark:text-brand-grey-500 font-normal ml-1">(optional)</span>
+            </label>
+            <input
+              type="text"
+              value={formData.featuredImageAlt}
+              onChange={(e) => setFormData(prev => ({ ...prev, featuredImageAlt: e.target.value }))}
+              maxLength={200}
               className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
+              placeholder="Describe the image for accessibility and SEO"
             />
-            <p className="text-xs text-brand-grey-400 mt-1">
-              {formData.excerpt.length}/300 characters
+            <p className="text-xs text-brand-grey-400 dark:text-brand-grey-500 mt-1">
+              {formData.featuredImageAlt.length}/200 characters. Used for screen readers and search engines.
             </p>
           </div>
 
-          {/* Content */}
+          {/* Content Blocks */}
           <div>
             <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">
               Content *
             </label>
-            <textarea
-              value={formData.content}
-              onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-              required
-              rows={15}
-              className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent font-mono text-sm"
+            <ContentBlocksEditor
+              blocks={formData.contentBlocks}
+              onChange={(blocks) => setFormData(prev => ({ ...prev, contentBlocks: blocks }))}
             />
           </div>
 
@@ -211,33 +385,87 @@ export default function EditBlogPage() {
           </div>
 
           {/* Status & Featured */}
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">
-                Status
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-              >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
-                <option value="archived">Archived</option>
-              </select>
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">
+                  Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                  className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
+                >
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="archived">Archived</option>
+                </select>
+                <p className="text-xs text-brand-grey-400 dark:text-brand-grey-500 mt-1">
+                  {formData.status === 'scheduled'
+                    ? 'Post will auto-publish at the scheduled date/time'
+                    : formData.status === 'published'
+                    ? 'Post is immediately visible to public'
+                    : 'Only visible to admins'}
+                </p>
+              </div>
+
+              <div className="flex items-center pt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.featured}
+                    onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
+                    className="w-5 h-5 rounded border-brand-grey-300 dark:border-brand-grey-600 text-accent focus:ring-accent"
+                  />
+                  <span className="text-sm font-medium text-brand-black dark:text-white">Featured Post</span>
+                </label>
+              </div>
             </div>
 
-            <div className="flex items-center pt-8">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.featured}
-                  onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
-                  className="w-5 h-5 rounded border-brand-grey-300 dark:border-brand-grey-600 text-accent focus:ring-accent"
-                />
-                <span className="text-sm font-medium text-brand-black dark:text-white">Featured Post</span>
-              </label>
-            </div>
+            {/* Schedule Post Section - Only shown when status is 'scheduled' */}
+            {formData.status === 'scheduled' && (
+              <div className="bg-accent/5 border border-accent/20 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-brand-black dark:text-white mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Schedule Publish Date & Time
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">
+                      Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.scheduledPublishDate}
+                      onChange={(e) => setFormData(prev => ({ ...prev, scheduledPublishDate: e.target.value }))}
+                      required={formData.status === 'scheduled'}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">
+                      Time
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.scheduledPublishTime}
+                      onChange={(e) => setFormData(prev => ({ ...prev, scheduledPublishTime: e.target.value }))}
+                      className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
+                    />
+                    <p className="text-xs text-brand-grey-400 dark:text-brand-grey-500 mt-1">
+                      Defaults to 9:00 AM if not set
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs text-brand-grey-500 dark:text-brand-grey-400 mt-3">
+                  <strong>Note:</strong> The post will automatically change to "Published" status at the scheduled time.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* SEO Section */}
@@ -296,10 +524,10 @@ export default function EditBlogPage() {
             </Link>
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || uploadingImage}
               className="px-6 py-3 bg-accent text-brand-black font-semibold rounded-lg hover:bg-accent/90 transition-colors disabled:opacity-50"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {uploadingImage ? 'Uploading Image...' : saving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </div>

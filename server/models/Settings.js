@@ -8,17 +8,6 @@ const socialLinksSchema = new mongoose.Schema({
   youtube: { type: String, default: '' }
 }, { _id: false });
 
-const contactInfoSchema = new mongoose.Schema({
-  email: { type: String, default: '' },
-  phone: { type: String, default: '' },
-  alternatePhone: { type: String, default: '' },
-  address: { type: String, default: '' },
-  city: { type: String, default: '' },
-  state: { type: String, default: '' },
-  country: { type: String, default: '' },
-  zipCode: { type: String, default: '' }
-}, { _id: false });
-
 const heroSchema = new mongoose.Schema({
   title: { type: String, default: '' },
   subtitle: { type: String, default: '' },
@@ -69,10 +58,6 @@ const settingsSchema = new mongoose.Schema({
   siteDescription: {
     type: String,
     default: 'Predictable Revenue Systems for Scalable Businesses. We help B2B companies transform their revenue operations.'
-  },
-  contactInfo: {
-    type: contactInfoSchema,
-    default: () => ({})
   },
   socialLinks: {
     type: socialLinksSchema,

@@ -82,6 +82,7 @@ export default function BlogListPage() {
         >
           <option value="">All Status</option>
           <option value="published">Published</option>
+          <option value="scheduled">Scheduled</option>
           <option value="draft">Draft</option>
           <option value="archived">Archived</option>
         </select>
@@ -121,11 +122,17 @@ export default function BlogListPage() {
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 text-xs rounded-full ${
                       blog.status === 'published' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                      blog.status === 'scheduled' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
                       blog.status === 'draft' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
                       'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                     }`}>
                       {blog.status}
                     </span>
+                    {blog.status === 'scheduled' && blog.scheduledPublishDate && (
+                      <p className="text-xs text-brand-grey-400 mt-1">
+                        Scheduled: {new Date(blog.scheduledPublishDate).toLocaleString()}
+                      </p>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-brand-grey-500 dark:text-brand-grey-400">
                     {new Date(blog.publishDate || blog.createdAt).toLocaleDateString()}

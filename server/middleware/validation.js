@@ -134,12 +134,32 @@ const schemas = {
     title: Joi.string().max(200).required(),
     slug: Joi.string().pattern(/^[a-z0-9-]+$/).required(),
     featuredImage: Joi.string().allow(null, ''),
-    excerpt: Joi.string().max(300).required(),
-    content: Joi.string().required(),
+    featuredImageAlt: Joi.string().max(200).allow(''),
+    content: Joi.string().allow(''),
+    contentBlocks: Joi.array().items(Joi.object({
+      id: Joi.string(),
+      type: Joi.string().valid('heading', 'paragraph', 'bulletList').required(),
+      level: Joi.number().valid(1, 2, 3).when('type', {
+        is: 'heading',
+        then: Joi.number().valid(1, 2, 3).required(),
+        otherwise: Joi.forbidden()
+      }),
+      text: Joi.string().when('type', {
+        is: Joi.string().valid('heading', 'paragraph'),
+        then: Joi.string().required(),
+        otherwise: Joi.forbidden()
+      }),
+      items: Joi.array().items(Joi.string()).when('type', {
+        is: 'bulletList',
+        then: Joi.array().items(Joi.string()).min(1).required(),
+        otherwise: Joi.forbidden()
+      })
+    })),
     category: Joi.string().valid('Strategy', 'Automation', 'Performance', 'Technology', 'Growth', 'General').required(),
     tags: Joi.array().items(Joi.string()),
-    status: Joi.string().valid('draft', 'published', 'archived'),
+    status: Joi.string().valid('draft', 'published', 'archived', 'scheduled'),
     publishDate: Joi.date().allow(null),
+    scheduledPublishDate: Joi.date().allow(null),
     featured: Joi.boolean(),
     seo: Joi.object({
       metaTitle: Joi.string().max(60),
@@ -154,12 +174,32 @@ const schemas = {
     title: Joi.string().max(200),
     slug: Joi.string().pattern(/^[a-z0-9-]+$/),
     featuredImage: Joi.string().allow(null, ''),
-    excerpt: Joi.string().max(300),
-    content: Joi.string(),
+    featuredImageAlt: Joi.string().max(200).allow(''),
+    content: Joi.string().allow(''),
+    contentBlocks: Joi.array().items(Joi.object({
+      id: Joi.string(),
+      type: Joi.string().valid('heading', 'paragraph', 'bulletList').required(),
+      level: Joi.number().valid(1, 2, 3).when('type', {
+        is: 'heading',
+        then: Joi.number().valid(1, 2, 3).required(),
+        otherwise: Joi.forbidden()
+      }),
+      text: Joi.string().when('type', {
+        is: Joi.string().valid('heading', 'paragraph'),
+        then: Joi.string().required(),
+        otherwise: Joi.forbidden()
+      }),
+      items: Joi.array().items(Joi.string()).when('type', {
+        is: 'bulletList',
+        then: Joi.array().items(Joi.string()).min(1).required(),
+        otherwise: Joi.forbidden()
+      })
+    })),
     category: Joi.string().valid('Strategy', 'Automation', 'Performance', 'Technology', 'Growth', 'General'),
     tags: Joi.array().items(Joi.string()),
-    status: Joi.string().valid('draft', 'published', 'archived'),
+    status: Joi.string().valid('draft', 'published', 'archived', 'scheduled'),
     publishDate: Joi.date().allow(null),
+    scheduledPublishDate: Joi.date().allow(null),
     featured: Joi.boolean(),
     seo: Joi.object({
       metaTitle: Joi.string().max(60),
@@ -174,8 +214,8 @@ const schemas = {
   createCaseStudy: Joi.object({
     title: Joi.string().max(200).required(),
     slug: Joi.string().pattern(/^[a-z0-9-]+$/).required(),
-    industry: Joi.string().valid('SaaS', 'E-commerce', 'Healthcare', 'Finance', 'Education', 'Manufacturing', 'Real Estate', 'Technology', 'Other').required(),
-    clientName: Joi.string().required(),
+    industry: Joi.string().valid('SaaS', 'E-commerce', 'Healthcare', 'Finance', 'Education', 'Manufacturing', 'Real Estate', 'Technology', 'Other').optional(),
+    clientName: Joi.string().optional().allow(''),
     clientLogo: Joi.string().allow(null, ''),
     featuredImage: Joi.string().allow(null, ''),
     challenge: Joi.string().required(),
@@ -253,16 +293,6 @@ const schemas = {
     siteName: Joi.string(),
     siteTagline: Joi.string(),
     siteDescription: Joi.string(),
-    contactInfo: Joi.object({
-      email: Joi.string().email().allow(''),
-      phone: Joi.string().allow(''),
-      alternatePhone: Joi.string().allow(''),
-      address: Joi.string().allow(''),
-      city: Joi.string().allow(''),
-      state: Joi.string().allow(''),
-      country: Joi.string().allow(''),
-      zipCode: Joi.string().allow('')
-    }),
     socialLinks: Joi.object({
       linkedin: Joi.string().allow(''),
       twitter: Joi.string().allow(''),

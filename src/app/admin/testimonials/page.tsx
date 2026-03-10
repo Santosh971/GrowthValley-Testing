@@ -33,7 +33,6 @@ export default function TestimonialsListPage() {
   const loadTestimonials = async () => {
     try {
       const response = await testimonialAPI.getAll();
-      console.log("Testimonial s : ", response)
       setTestimonials(response.data || []);
     } catch (error) {
       console.error('Failed to load testimonials:', error);

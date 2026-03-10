@@ -1,37 +1,30 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import Container from "@/components/Container";
 import Section, { SectionHeader } from "@/components/Section";
 import Button, { CTAButton } from "@/components/Button";
 import Card, { StatCard } from "@/components/Card";
 import Link from "next/link";
-import {
-  FadeInUp,
-  FadeInLeft,
-  FadeInRight,
-  StaggerContainer,
-  StaggerItem,
-  HoverLift,
-  staggerItem
-} from '@/components/animations';
 import { getImageUrl } from '@/lib/utils';
 
-// Animation variants
+// Simplified animation variants - only for section containers
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.08,
       delayChildren: 0.1,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 };
 
 // Icons
@@ -60,82 +53,39 @@ const Icons = {
   ),
 };
 
-// Decorative floating shapes component
-function FloatingShapes() {
+// Static decorative shapes - NO animations (performance optimization)
+function StaticDecorativeShapes() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Gradient Orbs */}
-      <motion.div
-        className="absolute -top-40 -right-40 w-96 h-96 bg-accent/10 rounded-full blur-3xl"
-        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute top-1/2 -left-20 w-72 h-72 bg-accent/5 rounded-full blur-3xl"
-        animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-      />
-
-      {/* Geometric Shapes */}
-      <motion.div
-        className="absolute top-32 right-1/4 w-4 h-4 bg-accent/30 rotate-45"
-        animate={{ rotate: [45, 90, 45], y: [0, -20, 0] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute bottom-20 left-1/3 w-3 h-3 bg-accent/20 rounded-full"
-        animate={{ scale: [1, 1.5, 1], y: [0, -10, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute top-1/3 right-1/3 w-2 h-2 bg-accent/25 rotate-45"
-        animate={{ rotate: [45, 135, 45] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-      />
+      {/* Gradient Orbs - static CSS */}
+      <div className="absolute -top-40 -right-40 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 -left-20 w-72 h-72 bg-accent/5 rounded-full blur-3xl" />
+      {/* Geometric Shapes - static CSS */}
+      <div className="absolute top-32 right-1/4 w-4 h-4 bg-accent/20 rotate-45" />
+      <div className="absolute bottom-20 left-1/3 w-3 h-3 bg-accent/15 rounded-full" />
+      <div className="absolute top-1/3 right-1/3 w-2 h-2 bg-accent/20 rotate-45" />
     </div>
   );
 }
 
-// Hero Section with animations
+// Hero Section - Optimized for LCP (no motion on critical content)
 export function AnimatedHeroSection({ hero }: { hero: any }) {
-  console.log("Home Content : ", hero)
-
   return (
     <section className="relative pt-32 pb-16 md:pt-40 md:pb-24 lg:pt-48 lg:pb-32 bg-white dark:bg-brand-grey-950 overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-hero-gradient bg-dot-pattern" />
-      <FloatingShapes />
+      <StaticDecorativeShapes />
 
       <Container className="relative z-10">
-        <motion.div
-          className="max-w-4xl"
-          initial="hidden"
-          animate="visible"
-          variants={containerVariants}
-        >
+        {/* Static content for faster LCP - no motion wrapper on container */}
+        <div className="max-w-4xl">
           {hero?.label && (
-            <motion.span
-              className="text-label text-accent uppercase mb-6 block"
-              variants={itemVariants}
-            >
+            <span className="text-label text-accent uppercase mb-6 block">
               {hero.label}
-            </motion.span>
+            </span>
           )}
-          <motion.h1
-            // className="text-display text-brand-black dark:text-white mb-6"
-            // variants={itemVariants}
-            className="
-    text-3xl 
-    sm:text-4xl 
-    md:text-5xl 
-    lg:text-6xl 
-    text-brand-black 
-    dark:text-white 
-    mb-6 
-    leading-tight
-  "
-            variants={itemVariants}
-          >
+          {/* Regular h1 - NO motion for LCP optimization */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-brand-black dark:text-white mb-6 leading-tight">
             {hero?.title ? (
               <>
                 {hero.title.split(' ').slice(0, -1).join(' ')}{' '}
@@ -144,30 +94,12 @@ export function AnimatedHeroSection({ hero }: { hero: any }) {
             ) : (
               'Predictable Revenue Systems for Scalable Businesses'
             )}
-          </motion.h1>
-          <motion.p
-            // className="text-xl text-left text-brand-grey-500 dark:text-brand-grey-400 font-normal mb-10 max-w-3xl"
-            // variants={itemVariants}
-            className="
-    text-base 
-    sm:text-lg 
-    md:text-xl 
-    text-left 
-    text-brand-grey-500 
-    dark:text-brand-grey-400 
-    font-normal 
-    mb-10 
-    max-w-3xl
-  "
-            variants={itemVariants}
-
-          >
+          </h1>
+          {/* Regular p - NO motion for LCP optimization */}
+          <p className="text-base sm:text-lg md:text-xl text-left text-brand-grey-500 dark:text-brand-grey-400 font-normal mb-10 max-w-3xl">
             {hero?.subtitle || 'We transform fragmented revenue operations into unified, predictable growth engines.'}
-          </motion.p>
-          <motion.div
-            className="flex flex-wrap gap-4"
-            variants={itemVariants}
-          >
+          </p>
+          <div className="flex flex-wrap gap-4">
             {hero?.ctaText && (
               <CTAButton href={hero?.ctaLink || '/contact'}>{hero.ctaText}</CTAButton>
             )}
@@ -176,38 +108,32 @@ export function AnimatedHeroSection({ hero }: { hero: any }) {
                 {hero.secondaryCtaText}
               </Button>
             )}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </Container>
     </section>
   );
 }
 
-// Credibility Section with animations
+// Credibility Section - Simplified animations
 export function AnimatedCredibilitySection({ stats }: { stats: any[] }) {
   return (
     <section className="relative py-16 bg-brand-grey-50 dark:bg-brand-grey-900 overflow-hidden">
-      {/* Animated Background */}
+      {/* Static gradient background */}
       <div className="absolute inset-0 bg-gradient-mesh" />
-      <motion.div
-        className="absolute top-0 left-1/4 w-64 h-64 bg-accent/5 rounded-full blur-3xl"
-        animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
-        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-      />
 
       <Container className="relative z-10">
         <motion.div
           className="grid grid-cols-2 md:grid-cols-4 gap-8"
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: true, margin: "-50px" }}
           variants={containerVariants}
         >
           {(stats || []).map((stat, index) => (
             <motion.div
               key={index}
               variants={itemVariants}
-              whileHover={{ scale: 1.05, y: -5 }}
               className="text-center"
             >
               <StatCard value={stat.value} label={stat.label} />
@@ -219,65 +145,161 @@ export function AnimatedCredibilitySection({ stats }: { stats: any[] }) {
   );
 }
 
-// Problem Section with animations
+// Problem Section - Auto-playing Carousel
 export function AnimatedProblemSection({ problems }: { problems: any }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+  // Get visible problems
+  const visibleProblems = problems?.items || [];
+
+  // Calculate cards per view based on screen size
+  const getCardsPerView = useCallback(() => {
+    if (typeof window === 'undefined') return 3;
+    if (window.innerWidth < 768) return 1;
+    if (window.innerWidth < 1024) return 2;
+    return 3;
+  }, []);
+
+  const [cardsPerView, setCardsPerView] = useState(3);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setCardsPerView(getCardsPerView());
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [getCardsPerView]);
+
+  // Calculate total slides for dots
+  const totalSlides = Math.ceil(visibleProblems.length / cardsPerView);
+  const currentSlide = Math.floor(currentIndex / cardsPerView);
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (!isAutoPlaying || visibleProblems.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % visibleProblems.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, visibleProblems.length]);
+
+  // Navigation functions
+  const goToPrev = () => {
+    setIsAutoPlaying(false);
+    setCurrentIndex((prev) => (prev - 1 + visibleProblems.length) % visibleProblems.length);
+  };
+
+  const goToNext = () => {
+    setIsAutoPlaying(false);
+    setCurrentIndex((prev) => (prev + 1) % visibleProblems.length);
+  };
+
+  const goToSlide = (slideIndex: number) => {
+    setIsAutoPlaying(false);
+    setCurrentIndex(slideIndex * cardsPerView);
+  };
+
+  if (visibleProblems.length === 0) return null;
+
   return (
     <section className="relative py-20 bg-white dark:bg-brand-grey-950 overflow-hidden">
-      {/* Diagonal Pattern */}
+      {/* Static diagonal pattern */}
       <div className="absolute inset-0 bg-diagonal-pattern opacity-50" />
-      <motion.div
-        className="absolute -bottom-20 -right-20 w-72 h-72 bg-accent/5 rounded-full blur-3xl"
-        animate={{ scale: [1, 1.3, 1] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-      />
 
       <Container className="relative z-10">
-        <FadeInUp>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
           <SectionHeader
             label={problems?.title || 'The Challenge'}
             title={problems?.subtitle || 'Most B2B companies struggle with revenue unpredictability'}
             description={problems?.description || 'Sound familiar? You\'re not alone.'}
           />
-        </FadeInUp>
-        <motion.div
-          className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={containerVariants}
-        >
-          {(problems?.items || []).map((problem: any, index: number) => (
-            <motion.div
-              key={index}
-              className="relative border-l-2 border-accent pl-6 py-4 bg-gradient-to-r from-accent/5 to-transparent"
-              variants={itemVariants}
-              whileHover={{ x: 4, backgroundColor: 'rgba(255, 193, 7, 0.05)' }}
-              transition={{ type: 'spring', stiffness: 300 }}
-            >
-              <motion.div
-                className="absolute -left-1.5 top-4 w-3 h-3 bg-accent"
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 + 0.3 }}
-              />
-              <h3 className="text-heading-4 text-brand-black dark:text-white mb-2">
-                {problem.title}
-              </h3>
-              <p className="text-body text-left text-brand-grey-500 dark:text-brand-grey-400">
-                {problem.description}
-              </p>
-            </motion.div>
-          ))}
         </motion.div>
+
+        {/* Carousel Container */}
+        <div className="relative">
+          {/* Navigation Arrows */}
+          <button
+            onClick={goToPrev}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-700 rounded-full shadow-lg flex items-center justify-center text-brand-grey-600 dark:text-brand-grey-300 hover:text-accent hover:border-accent transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+            aria-label="Previous challenge"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+
+          <button
+            onClick={goToNext}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-700 rounded-full shadow-lg flex items-center justify-center text-brand-grey-600 dark:text-brand-grey-300 hover:text-accent hover:border-accent transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+            aria-label="Next challenge"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+
+          {/* Carousel Track */}
+          <div className="overflow-hidden mx-8">
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{
+                transform: `translateX(-${currentIndex * (100 / cardsPerView)}%)`,
+              }}
+            >
+              {visibleProblems.map((problem: any, index: number) => (
+                <div
+                  key={index}
+                  className="flex-shrink-0 px-4"
+                  style={{ width: `${100 / cardsPerView}%` }}
+                >
+                  <div className="relative border-l-2 border-accent pl-6 py-4 bg-gradient-to-r from-accent/5 to-transparent transition-all duration-200 hover:bg-accent/5 h-full min-h-[140px]">
+                    {/* Yellow dot bullet */}
+                    <div className="absolute -left-1.5 top-4 w-3 h-3 bg-accent rounded-full" />
+                    {/* Bold white title */}
+                    <h3 className="text-heading-4 text-brand-black dark:text-white mb-2">
+                      {problem.title}
+                    </h3>
+                    {/* Grey description text */}
+                    <p className="text-body text-left text-brand-grey-500 dark:text-brand-grey-400">
+                      {problem.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Dot Indicators */}
+          <div className="flex justify-center gap-2 mt-8">
+            {[...Array(totalSlides)].map((_, slideIndex) => (
+              <button
+                key={slideIndex}
+                onClick={() => goToSlide(slideIndex)}
+                className={`w-3 h-3 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 ${slideIndex === currentSlide
+                  ? 'bg-accent w-6'
+                  : 'bg-brand-grey-300 dark:bg-brand-grey-600 hover:bg-brand-grey-400 dark:hover:bg-brand-grey-500'
+                  }`}
+                aria-label={`Go to slide ${slideIndex + 1}`}
+              />
+            ))}
+          </div>
+        </div>
       </Container>
     </section>
   );
 }
 
-// Solution Section with animations
+// Solution Section - Static background, simplified animations
 export function AnimatedSolutionSection({ solutions }: { solutions: any }) {
-  console.log("Solutions : ", solutions)
   const iconMap: Record<string, JSX.Element> = {
     chart: <Icons.Chart />,
     process: <Icons.Process />,
@@ -287,28 +309,22 @@ export function AnimatedSolutionSection({ solutions }: { solutions: any }) {
 
   return (
     <section className="relative py-20 bg-brand-grey-50 dark:bg-brand-grey-900 overflow-hidden">
-      {/* Grid Pattern */}
+      {/* Static grid pattern */}
       <div className="absolute inset-0 bg-grid-pattern" />
-      <motion.div
-        className="absolute top-1/4 -left-10 w-48 h-48 bg-accent/10 rounded-full blur-3xl"
-        animate={{ y: [0, 30, 0], x: [0, 20, 0] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute bottom-1/4 -right-10 w-64 h-64 bg-accent/5 rounded-full blur-3xl"
-        animate={{ y: [0, -20, 0] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-      />
 
       <Container className="relative z-10">
-        <FadeInUp  >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
           <SectionHeader
             label={solutions?.title || 'Our Approach'}
             title={solutions?.subtitle || 'Building predictable revenue, systematically'}
             description={solutions?.description || 'We don\'t offer quick fixes. We build lasting revenue systems.'}
-
           />
-        </FadeInUp>
+        </motion.div>
 
         <motion.div
           className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
@@ -317,43 +333,14 @@ export function AnimatedSolutionSection({ solutions }: { solutions: any }) {
           viewport={{ once: true, margin: "-50px" }}
           variants={containerVariants}
         >
-          {/* {(solutions?.items || []).map((solution: any, index: number) => (
-            <motion.div
-              key={index}
-              variants={itemVariants}
-              whileHover={{ y: -8, scale: 1.02 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-              className="h-full"
-            >
-              <Card
-                title={solution.title}
-                description={solution.description}
-                icon={iconMap[solution.icon] || <Icons.Chart />}
-                // href={`/solutions#${solution.id || solution.title?.toLowerCase().replace(/\s+/g, '-')}`}
-                href={`/solutions#${solution.id}`}
-
-              />
-            </motion.div>
-          ))} */}
-
-
           {(solutions?.items || []).map((solution: any, index: number) => {
-
-            const solutionIds = [
-              "revenue-architecture",
-              "sales-process",
-              "revops",
-              "gtm"
-            ];
-
+            const solutionIds = ["revenue-architecture", "sales-process", "revops", "gtm"];
             const solutionId = solution.id || solutionIds[index];
 
             return (
               <motion.div
                 key={index}
                 variants={itemVariants}
-                whileHover={{ y: -8, scale: 1.02 }}
-                transition={{ type: 'spring', stiffness: 300 }}
                 className="h-full"
               >
                 <Card
@@ -371,11 +358,10 @@ export function AnimatedSolutionSection({ solutions }: { solutions: any }) {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.3 }}
         >
           <Button href="/solutions" variant="secondary">
             {solutions?.exploreButtonText || "Explore All Solutions"}
-
           </Button>
         </motion.div>
       </Container>
@@ -383,28 +369,26 @@ export function AnimatedSolutionSection({ solutions }: { solutions: any }) {
   );
 }
 
-// Industries Section with animations
+// Industries Section - Simplified
 export function AnimatedIndustriesSection({ industries }: { industries: any }) {
   return (
     <section className="relative py-20 bg-white dark:bg-brand-grey-950 overflow-hidden">
-      {/* Dot Pattern */}
+      {/* Static dot pattern */}
       <div className="absolute inset-0 bg-dot-pattern" />
-      <motion.div
-        className="absolute top-20 right-1/4 w-40 h-40 bg-accent/10 rounded-full blur-2xl"
-        animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0.5, 0.3] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-      />
 
       <Container className="relative z-10">
-
-        <FadeInUp>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
           <SectionHeader
             label={industries?.title || 'Industries'}
             title={industries?.subtitle || 'Deep expertise across B2B sectors'}
             description={industries?.description || 'We\'ve helped companies across industries transform.'}
           />
-
-        </FadeInUp>
+        </motion.div>
         <motion.div
           className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
           initial="hidden"
@@ -416,21 +400,15 @@ export function AnimatedIndustriesSection({ industries }: { industries: any }) {
             <motion.div
               key={index}
               variants={itemVariants}
-              whileHover={{ scale: 1.03, y: -5 }}
-              transition={{ type: 'spring', stiffness: 300 }}
               className="h-full"
             >
               <Link
                 href={`/industries#${industry.id || industry.name?.toLowerCase().replace(/\s+/g, '-')}`}
                 className="block h-full bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-800 p-6 hover:border-accent hover:shadow-lg transition-all duration-300"
               >
-                <motion.span
-                  className="text-3xl mb-4 block"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
-                >
+                <span className="text-3xl mb-4 block">
                   {industry.icon}
-                </motion.span>
+                </span>
                 <h3 className="text-heading-4 text-brand-black dark:text-white mb-2">
                   {industry.name}
                 </h3>
@@ -446,122 +424,219 @@ export function AnimatedIndustriesSection({ industries }: { industries: any }) {
   );
 }
 
-// Testimonials Section with animations
+// Testimonials Section - Auto-playing Carousel
 export function AnimatedTestimonialsSection({ testimonials }: { testimonials: any[] }) {
-  if (!testimonials || testimonials.length === 0) return null;
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+  // Get visible testimonials (limit to 6 for carousel)
+  const visibleTestimonials = testimonials?.slice(0, 6) || [];
+
+  // Calculate cards per view based on screen size (using CSS classes, but track for dots)
+  const getCardsPerView = useCallback(() => {
+    if (typeof window === 'undefined') return 3;
+    if (window.innerWidth < 768) return 1;
+    if (window.innerWidth < 1024) return 2;
+    return 3;
+  }, []);
+
+  const [cardsPerView, setCardsPerView] = useState(3);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setCardsPerView(getCardsPerView());
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [getCardsPerView]);
+
+  // Calculate total slides for dots
+  const totalSlides = Math.ceil(visibleTestimonials.length / cardsPerView);
+  const currentSlide = Math.floor(currentIndex / cardsPerView);
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (!isAutoPlaying || visibleTestimonials.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % visibleTestimonials.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, visibleTestimonials.length]);
+
+  // Navigation functions
+  const goToPrev = () => {
+    setIsAutoPlaying(false);
+    setCurrentIndex((prev) => (prev - 1 + visibleTestimonials.length) % visibleTestimonials.length);
+  };
+
+  const goToNext = () => {
+    setIsAutoPlaying(false);
+    setCurrentIndex((prev) => (prev + 1) % visibleTestimonials.length);
+  };
+
+  const goToSlide = (slideIndex: number) => {
+    setIsAutoPlaying(false);
+    setCurrentIndex(slideIndex * cardsPerView);
+  };
+
+  if (visibleTestimonials.length === 0) return null;
 
   return (
     <section className="relative py-20 bg-brand-grey-50 dark:bg-brand-grey-900 overflow-hidden">
-      {/* Gradient Mesh */}
+      {/* Static gradient mesh */}
       <div className="absolute inset-0 bg-gradient-mesh" />
-      <motion.div
-        className="absolute top-1/3 left-0 w-56 h-56 bg-accent/8 rounded-full blur-3xl"
-        animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute bottom-1/4 right-0 w-72 h-72 bg-accent/5 rounded-full blur-3xl"
-        animate={{ x: [0, -20, 0] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-      />
 
       <Container className="relative z-10">
-        <FadeInUp>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
           <SectionHeader
             label="Testimonials"
             title="What Our Clients Say"
             description="Hear from the companies we've helped transform"
           />
-        </FadeInUp>
-        <motion.div
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={containerVariants}
-        >
-          {testimonials.slice(0, 6).map((testimonial: any, index: number) => (
-            <motion.div
-              key={testimonial._id || index}
-              variants={itemVariants}
-              whileHover={{ y: -8, boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}
-              transition={{ type: 'spring', stiffness: 300 }}
-              className="bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-800 p-8 rounded-lg relative overflow-hidden"
-            >
-              {/* Quote Icon */}
-              <div className="absolute top-4 right-4 text-accent/10">
-                <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                </svg>
-              </div>
-
-              {/* Rating Stars */}
-              {testimonial.rating && (
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <motion.svg
-                      key={i}
-                      className={`w-5 h-5 ${i < testimonial.rating ? 'text-accent' : 'text-brand-grey-300'}`}
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      initial={{ opacity: 0, scale: 0 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 + i * 0.05 }}
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </motion.svg>
-                  ))}
-                </div>
-              )}
-
-              {/* Quote */}
-              <blockquote className="text-body text-brand-grey-600 dark:text-brand-grey-300 mb-6 italic relative z-10">
-                "{testimonial.quote}"
-              </blockquote>
-
-              {/* Author */}
-              <div className="flex items-center gap-4">
-                {testimonial.avatar ? (
-                  <img
-                    src={getImageUrl(testimonial.avatar)}
-                    alt={testimonial.author}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
-                    <span className="text-accent font-semibold text-lg">
-                      {testimonial.author.charAt(0)}
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <p className="font-semibold text-brand-black dark:text-white">
-                    {testimonial.author}
-                  </p>
-                  {(testimonial.designation || testimonial.company) && (
-                    <p className="text-body-sm text-brand-grey-500 dark:text-brand-grey-400">
-                      {testimonial.designation}{testimonial.company && `, ${testimonial.company}`}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ))}
         </motion.div>
+
+        {/* Carousel Container */}
+        <div className="relative">
+          {/* Navigation Arrows */}
+          <button
+            onClick={goToPrev}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-700 rounded-full shadow-lg flex items-center justify-center text-brand-grey-600 dark:text-brand-grey-300 hover:text-accent hover:border-accent transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+            aria-label="Previous testimonial"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+
+          <button
+            onClick={goToNext}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-700 rounded-full shadow-lg flex items-center justify-center text-brand-grey-600 dark:text-brand-grey-300 hover:text-accent hover:border-accent transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+            aria-label="Next testimonial"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+
+          {/* Carousel Track */}
+          <div className="overflow-hidden mx-8">
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{
+                transform: `translateX(-${currentIndex * (100 / cardsPerView)}%)`,
+              }}
+            >
+              {visibleTestimonials.map((testimonial: any, index: number) => (
+                <div
+                  key={testimonial._id || index}
+                  className="flex-shrink-0 px-4"
+                  style={{ width: `${100 / cardsPerView}%` }}
+                >
+                  <div className="bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-800 p-8 rounded-lg relative overflow-hidden transition-shadow duration-300 hover:shadow-lg h-full">
+                    {/* Quote Icon */}
+                    <div className="absolute top-4 right-4 text-accent/10">
+                      <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                      </svg>
+                    </div>
+
+                    {/* Rating Stars */}
+                    {testimonial.rating && (
+                      <div className="flex gap-1 mb-4">
+                        {[...Array(5)].map((_, i) => (
+                          <svg
+                            key={i}
+                            className={`w-5 h-5 ${i < testimonial.rating ? 'text-accent' : 'text-brand-grey-300'}`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Quote */}
+                    <blockquote className="text-body text-brand-grey-600 dark:text-brand-grey-300 mb-6 italic relative z-10">
+                      "{testimonial.quote}"
+                    </blockquote>
+
+                    {/* Author */}
+                    <div className="flex items-center gap-4">
+                      {testimonial.avatar ? (
+                        <Image
+                          src={getImageUrl(testimonial.avatar)}
+                          alt={testimonial.author}
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
+                          <span className="text-accent font-semibold text-lg">
+                            {testimonial.author.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-semibold text-brand-black dark:text-white">
+                          {testimonial.author}
+                        </p>
+                        {(testimonial.designation || testimonial.company) && (
+                          <p className="text-body-sm text-brand-grey-500 dark:text-brand-grey-400">
+                            {testimonial.designation}{testimonial.company && `, ${testimonial.company}`}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Dot Indicators */}
+          <div className="flex justify-center gap-2 mt-8">
+            {[...Array(totalSlides)].map((_, slideIndex) => (
+              <button
+                key={slideIndex}
+                onClick={() => goToSlide(slideIndex)}
+                className={`w-3 h-3 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 ${slideIndex === currentSlide
+                  ? 'bg-accent w-6'
+                  : 'bg-brand-grey-300 dark:bg-brand-grey-600 hover:bg-brand-grey-400 dark:hover:bg-brand-grey-500'
+                  }`}
+                aria-label={`Go to slide ${slideIndex + 1}`}
+              />
+            ))}
+          </div>
+        </div>
       </Container>
     </section>
   );
 }
 
-// Client Logos Section with animations
+// Client Logos Section - Simplified
 export function AnimatedClientLogosSection({ clients }: { clients: any[] }) {
   if (!clients || clients.length === 0) return null;
 
   return (
     <Section>
       <Container>
-        <FadeInUp>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="text-center mb-12">
             <p className="text-label text-brand-grey-400 dark:text-brand-grey-500 uppercase mb-4">
               Trusted By
@@ -570,7 +645,7 @@ export function AnimatedClientLogosSection({ clients }: { clients: any[] }) {
               Companies We've Worked With
             </h2>
           </div>
-        </FadeInUp>
+        </motion.div>
         <motion.div
           className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center"
           initial="hidden"
@@ -582,8 +657,6 @@ export function AnimatedClientLogosSection({ clients }: { clients: any[] }) {
             <motion.div
               key={client._id || index}
               variants={itemVariants}
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: 'spring', stiffness: 300 }}
               className="flex items-center justify-center p-4 grayscale hover:grayscale-0 opacity-60 hover:opacity-100 transition-all duration-300"
             >
               {client.website ? (
@@ -593,31 +666,43 @@ export function AnimatedClientLogosSection({ clients }: { clients: any[] }) {
                   rel="noopener noreferrer"
                   className="block"
                 >
-                  <img
+                  <Image
                     src={client.logo}
                     alt={client.name}
+                    width={120}
+                    height={48}
                     className="h-12 w-auto max-w-[120px] object-contain dark:hidden"
+                    loading="lazy"
                   />
                   {client.logoDark && (
-                    <img
+                    <Image
                       src={client.logoDark}
                       alt={client.name}
+                      width={120}
+                      height={48}
                       className="h-12 w-auto max-w-[120px] object-contain hidden dark:block"
+                      loading="lazy"
                     />
                   )}
                 </a>
               ) : (
                 <>
-                  <img
+                  <Image
                     src={client.logo}
                     alt={client.name}
+                    width={120}
+                    height={48}
                     className="h-12 w-auto max-w-[120px] object-contain dark:hidden"
+                    loading="lazy"
                   />
                   {client.logoDark && (
-                    <img
+                    <Image
                       src={client.logoDark}
                       alt={client.name}
+                      width={120}
+                      height={48}
                       className="h-12 w-auto max-w-[120px] object-contain hidden dark:block"
+                      loading="lazy"
                     />
                   )}
                 </>
@@ -630,121 +715,171 @@ export function AnimatedClientLogosSection({ clients }: { clients: any[] }) {
   );
 }
 
-// Case Study Preview Section with animations
+// Case Study Preview Section - Auto-playing Carousel
 export function AnimatedCaseStudyPreview({ caseStudyPreview }: { caseStudyPreview: any }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+  // Get visible case studies
+  const visibleCaseStudies = caseStudyPreview?.items || [];
+
+  // Calculate cards per view based on screen size
+  const getCardsPerView = useCallback(() => {
+    if (typeof window === 'undefined') return 3;
+    if (window.innerWidth < 768) return 1;
+    if (window.innerWidth < 1024) return 2;
+    return 3;
+  }, []);
+
+  const [cardsPerView, setCardsPerView] = useState(3);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setCardsPerView(getCardsPerView());
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [getCardsPerView]);
+
+  // Calculate total slides for dots
+  const totalSlides = Math.ceil(visibleCaseStudies.length / cardsPerView);
+  const currentSlide = Math.floor(currentIndex / cardsPerView);
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (!isAutoPlaying || visibleCaseStudies.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % visibleCaseStudies.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, visibleCaseStudies.length]);
+
+  // Navigation functions
+  const goToPrev = () => {
+    setIsAutoPlaying(false);
+    setCurrentIndex((prev) => (prev - 1 + visibleCaseStudies.length) % visibleCaseStudies.length);
+  };
+
+  const goToNext = () => {
+    setIsAutoPlaying(false);
+    setCurrentIndex((prev) => (prev + 1) % visibleCaseStudies.length);
+  };
+
+  const goToSlide = (slideIndex: number) => {
+    setIsAutoPlaying(false);
+    setCurrentIndex(slideIndex * cardsPerView);
+  };
+
+  if (visibleCaseStudies.length === 0) return null;
+
   return (
     <section className="relative py-20 bg-white dark:bg-brand-grey-950 overflow-hidden">
-      {/* Background Pattern */}
+      {/* Static diagonal pattern */}
       <div className="absolute inset-0 bg-diagonal-pattern" />
-      <motion.div
-        className="absolute top-0 right-0 w-80 h-80 bg-accent/5 rounded-full blur-3xl"
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-      />
 
       <Container className="relative z-10">
-        <FadeInUp>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
           <SectionHeader
             label={caseStudyPreview?.title || 'Results'}
             title={caseStudyPreview?.subtitle || 'Real transformations. Real numbers.'}
           />
-        </FadeInUp>
-        <motion.div
-          className="grid md:grid-cols-2 gap-8"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={containerVariants}
-        >
-          {(caseStudyPreview?.items || []).map((cs: any, index: number) => (
-            // <motion.div
-            //   key={index}
-            //   variants={itemVariants}
-            //   whileHover={{ y: -8, scale: 1.01 }}
-            //   transition={{ type: 'spring', stiffness: 300 }}
-            // >
-            //   <Link
-            //     href={cs.link || '/case-studies'}
-            //     className="block bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-800 p-8 hover:border-accent hover:shadow-xl transition-all duration-300"
-            //   >
-            //     <div className="flex justify-between items-start mb-4">
-            //       <span className="text-label text-brand-grey-400 dark:text-brand-grey-500 uppercase">
-            //         {cs.industry}
-            //       </span>
-            //       <motion.span
-            //         // className="text-heading-4 text-accent font-bold"
-            //         className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-accent font-bold"
-
-            //         initial={{ opacity: 0, scale: 0.5 }}
-            //         whileInView={{ opacity: 1, scale: 1 }}
-            //         viewport={{ once: true }}
-            //         transition={{ delay: index * 0.2 + 0.3, type: 'spring' }}
-            //       >
-            //         {cs.result}
-            //       </motion.span>
-            //     </div>
-            //     <h3 className="text-heading-3 text-brand-black dark:text-white mb-2">
-            //       {cs.client}
-            //     </h3>
-            //     <p className="text-body text-brand-grey-500 dark:text-brand-grey-400">{cs.description}</p>
-            //   </Link>
-            // </motion.div>
-            <motion.div
-              key={index}
-              variants={itemVariants}
-              whileHover={{ y: -4, scale: 1.01 }} // subtle hover for all devices
-              transition={{ type: 'spring', stiffness: 300 }}
-            >
-              <Link
-                href={cs.link || '/case-studies'}
-                className="
-      block 
-      bg-white dark:bg-brand-grey-900 
-      border border-brand-grey-200 dark:border-brand-grey-800 
-      p-4 sm:p-6 md:p-8 
-      hover:border-accent hover:shadow-xl 
-      transition-all duration-300
-      rounded-lg
-    "
-              >
-                <div className="flex justify-between items-start mb-3 sm:mb-4">
-                  {/* Industry Label */}
-                  <span className="text-xs sm:text-sm md:text-base text-brand-grey-400 dark:text-brand-grey-500 uppercase">
-                    {cs.industry}
-                  </span>
-
-                  {/* Result Number */}
-                  <motion.span
-                    className="text-base sm:text-xs md:text-xl lg:text-2xl xl:text-3xl text-accent font-bold"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.15 + 0.2, type: 'spring' }}
-                  >
-                    {cs.result}
-                  </motion.span>
-                </div>
-
-                {/* Client Name */}
-                <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-brand-black dark:text-white mb-1 sm:mb-2">
-                  {cs.client}
-                </h3>
-
-                {/* Description */}
-                <p className="text-sm sm:text-base md:text-lg text-brand-grey-500 dark:text-brand-grey-400">
-                  {cs.description}
-                </p>
-              </Link>
-            </motion.div>
-
-          ))}
         </motion.div>
+
+        {/* Carousel Container */}
+        <div className="relative">
+          {/* Navigation Arrows */}
+          <button
+            onClick={goToPrev}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-700 rounded-full shadow-lg flex items-center justify-center text-brand-grey-600 dark:text-brand-grey-300 hover:text-accent hover:border-accent transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+            aria-label="Previous case study"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+
+          <button
+            onClick={goToNext}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white dark:bg-brand-grey-800 border border-brand-grey-200 dark:border-brand-grey-700 rounded-full shadow-lg flex items-center justify-center text-brand-grey-600 dark:text-brand-grey-300 hover:text-accent hover:border-accent transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+            aria-label="Next case study"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+
+          {/* Carousel Track */}
+          <div className="overflow-hidden mx-8">
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{
+                transform: `translateX(-${currentIndex * (100 / cardsPerView)}%)`,
+              }}
+            >
+              {visibleCaseStudies.map((cs: any, index: number) => (
+                <div
+                  key={index}
+                  className="flex-shrink-0 px-4"
+                  style={{ width: `${100 / cardsPerView}%` }}
+                >
+                  <Link
+                    href={cs.link || '/case-studies'}
+                    className="block h-full bg-white dark:bg-brand-grey-900 border border-brand-grey-200 dark:border-brand-grey-800 p-4 sm:p-6 md:p-8 hover:border-accent hover:shadow-xl transition-all duration-300 rounded-lg min-h-[200px]"
+                  >
+                    {/* Category label and result */}
+                    <div className="flex justify-between items-start mb-3 sm:mb-4">
+                      <span className="text-xs sm:text-sm md:text-base text-brand-grey-400 dark:text-brand-grey-500 uppercase">
+                        {cs.industry}
+                      </span>
+                      <span className="text-base sm:text-xs md:text-xl lg:text-2xl xl:text-3xl text-accent font-bold">
+                        {cs.result}
+                      </span>
+                    </div>
+                    {/* Bold white title */}
+                    <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-brand-black dark:text-white mb-1 sm:mb-2">
+                      {cs.client}
+                    </h3>
+                    {/* Grey description */}
+                    <p className="text-sm sm:text-base md:text-lg text-brand-grey-500 dark:text-brand-grey-400">
+                      {cs.description}
+                    </p>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Dot Indicators */}
+          <div className="flex justify-center gap-2 mt-8">
+            {[...Array(totalSlides)].map((_, slideIndex) => (
+              <button
+                key={slideIndex}
+                onClick={() => goToSlide(slideIndex)}
+                className={`w-3 h-3 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 ${slideIndex === currentSlide
+                  ? 'bg-accent w-6'
+                  : 'bg-brand-grey-300 dark:bg-brand-grey-600 hover:bg-brand-grey-400 dark:hover:bg-brand-grey-500'
+                  }`}
+                aria-label={`Go to slide ${slideIndex + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* View All Button */}
         <motion.div
           className="text-center mt-12"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.3 }}
         >
           <Button href="/case-studies" variant="secondary">
             View All Case Studies
@@ -755,23 +890,27 @@ export function AnimatedCaseStudyPreview({ caseStudyPreview }: { caseStudyPrevie
   );
 }
 
-// Operating Model Section with animations
+// Operating Model Section - Simplified
 export function AnimatedOperatingModel({ process }: { process: any }) {
   return (
     <section className="relative py-20 bg-brand-grey-50 dark:bg-brand-grey-900 overflow-hidden">
-      {/* Grid Pattern */}
+      {/* Static grid pattern */}
       <div className="absolute inset-0 bg-grid-pattern" />
-
-      {/* Decorative Line */}
+      {/* Static decorative line */}
       <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
 
       <Container className="relative z-10">
-        <FadeInUp>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
           <SectionHeader
             label={process?.title || 'How We Work'}
             title={process?.subtitle || 'A systematic approach to transformation'}
           />
-        </FadeInUp>
+        </motion.div>
         <motion.div
           className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
           initial="hidden"
@@ -785,17 +924,12 @@ export function AnimatedOperatingModel({ process }: { process: any }) {
               className="relative"
               variants={itemVariants}
             >
-              {/* Step Number Circle */}
-              <motion.div
-                className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mb-6"
-                whileHover={{ scale: 1.1, backgroundColor: 'rgba(255, 193, 7, 0.2)' }}
-                transition={{ type: 'spring', stiffness: 300 }}
-              >
+              {/* Step Number Circle - static */}
+              <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mb-6 transition-colors duration-200 hover:bg-accent/20">
                 <span className="text-heading-2 text-accent font-bold">
                   {step.number || `0${index + 1}`}
                 </span>
-              </motion.div>
-
+              </div>
               {/* Content */}
               <div className="pl-2">
                 <h3 className="text-heading-4 text-brand-black dark:text-white mb-2">
@@ -805,17 +939,6 @@ export function AnimatedOperatingModel({ process }: { process: any }) {
                   {step.description}
                 </p>
               </div>
-
-              {/* Connector Line (except last) */}
-              {index < (process?.steps?.length || 4) - 1 && (
-                <motion.div
-                  className="hidden lg:block absolute top-8 left-20 w-full h-0.5 bg-gradient-to-r from-accent/30 to-transparent"
-                  initial={{ scaleX: 0, originX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 + 0.5, duration: 0.5 }}
-                />
-              )}
             </motion.div>
           ))}
         </motion.div>
@@ -824,41 +947,23 @@ export function AnimatedOperatingModel({ process }: { process: any }) {
   );
 }
 
-// Final CTA Section with animations
+// Final CTA Section - Static background, no infinite animations
 export function AnimatedFinalCTA({ cta }: { cta: any }) {
   return (
     <section className="relative py-24 bg-brand-grey-50 dark:bg-brand-grey-900 overflow-hidden">
-      {/* Animated Gradient */}
+      {/* Static animated gradient background */}
       <div className="absolute inset-0 bg-animated-gradient" />
 
-      {/* Floating Elements */}
-      <motion.div
-        className="absolute top-10 left-1/4 w-4 h-4 bg-accent/30 rounded-full"
-        animate={{ y: [0, -30, 0], opacity: [0.3, 0.6, 0.3] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute top-1/3 right-1/4 w-3 h-3 bg-accent/20 rotate-45"
-        animate={{ rotate: [45, 90, 45], y: [0, -20, 0] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute bottom-20 left-1/3 w-2 h-2 bg-accent/25 rounded-full"
-        animate={{ scale: [1, 1.5, 1] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-      />
+      {/* Static decorative elements - NO infinite animations */}
+      <div className="absolute top-10 left-1/4 w-4 h-4 bg-accent/20 rounded-full" />
+      <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-accent/15 rotate-45" />
+      <div className="absolute bottom-20 left-1/3 w-2 h-2 bg-accent/20 rounded-full" />
 
-      {/* Gradient Orbs */}
-      <motion.div
-        className="absolute top-1/2 left-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl -translate-y-1/2"
-        animate={{ x: [0, 30, 0], scale: [1, 1.1, 1] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute top-1/2 right-0 w-80 h-80 bg-accent/8 rounded-full blur-3xl -translate-y-1/2"
-        animate={{ x: [0, -30, 0], scale: [1.1, 1, 1.1] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-      />
+      {/* Static gradient orbs */}
+      <div className="absolute top-1/2 left-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl -translate-y-1/2" />
+      <div className="absolute top-1/2 right-0 w-80 h-80 bg-accent/8 rounded-full blur-3xl -translate-y-1/2" />
+
+
 
       <Container className="relative z-10">
         <motion.div
@@ -866,32 +971,19 @@ export function AnimatedFinalCTA({ cta }: { cta: any }) {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
         >
-          <motion.h2
-            className="text-heading-1 text-brand-black dark:text-white mb-6"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            {cta?.title || 'Ready for predictable revenue?'}
-          </motion.h2>
-          <motion.p
-            className="text-body-lg text-brand-grey-500 dark:text-brand-grey-400 mb-10"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-          >
-            {cta?.description || 'Let\'s discuss how Growth Valley can transform your revenue operations.'}
-          </motion.p>
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <CTAButton href={cta?.buttonLink || '/contact'}>{cta?.buttonText || 'Schedule a Call'}</CTAButton>
-          </motion.div>
+          <h2 className="text-heading-1 text-brand-black dark:text-white mb-6">
+            {cta?.title || "Ready for predictable revenue?"}
+          </h2>
+
+          <p className="text-body-lg text-brand-grey-500 dark:text-brand-grey-400 mb-10 whitespace-nowrap text-center">
+            {cta?.description || "Let's discuss how Growth Valley can transform your revenue operations."}
+          </p>
+
+          <CTAButton href={cta?.buttonLink || "/contact"}>
+            {cta?.buttonText || "Schedule a Call"}
+          </CTAButton>
         </motion.div>
       </Container>
     </section>

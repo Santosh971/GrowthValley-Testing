@@ -13,6 +13,7 @@ const connectDB = require('./config/database');
 const routes = require('./routes');
 const { apiLimiter } = require('./middleware/rateLimiter');
 const config = require('./config');
+const scheduler = require('./services/scheduler');
 
 // Initialize express app
 const app = express();
@@ -74,11 +75,24 @@ app.use(
   })
 );
 // CORS configuration
+// app.use(cors({
+//   origin: config.nodeEnv === 'production'
+//     ? [config.frontendUrl, /\.growthvalley\.(in|com)$/]
+//     : true,
+//   // : config.frontendUrl,
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cache-Control', 'Accept', 'Origin'],
+// }));
+
+
+
 app.use(cors({
-  origin: config.nodeEnv === 'production'
-    ? [config.frontendUrl, /\.growthvalley\.(in|com)$/]
-    : true,
-  // : config.frontendUrl,
+  origin: [
+    "http://localhost:3000",
+    "https://growth-valley-testing.vercel.app",
+    /\.vercel\.app$/
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cache-Control', 'Accept', 'Origin'],
@@ -119,6 +133,7 @@ app.use('/api/case-studies', routes.caseStudies);
 app.use('/api/clients', routes.clients);
 app.use('/api/content', routes.content);
 app.use('/api/contact', routes.enquiries);
+app.use('/api/cron', routes.cron);
 app.use('/api/settings', routes.settings);
 app.use('/api/seo', routes.seo);
 app.use('/api/media', routes.media);
@@ -253,6 +268,9 @@ const server = app.listen(PORT, () => {
 
 📚 Health Check: http://localhost:${PORT}/api/health
 `);
+
+  // Start the scheduler for scheduled posts
+  scheduler.start();
 });
 
 // Handle unhandled promise rejections
@@ -270,6 +288,7 @@ process.on('uncaughtException', (err) => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received. Shutting down gracefully...');
+  scheduler.stop();
   server.close(() => {
     console.log('Process terminated.');
     process.exit(0);

@@ -49,7 +49,6 @@ describe('Blog API', () => {
     testBlog = await Blog.create({
       title: 'Test Blog Post',
       slug: 'test-blog-post',
-      excerpt: 'This is a test excerpt',
       content: 'Full content',
       category: 'Technology',
       status: 'published',
@@ -85,7 +84,6 @@ describe('Blog API', () => {
         .send({
           title: 'New Post',
           slug: 'new-post',
-          excerpt: 'Excerpt',
           content: 'Content',
           category: 'Strategy',
           status: 'draft',

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { contentAPI } from '@/lib/admin-api';
 import AdminLayout from '../../AdminLayout';
+import CaseStudiesManager from '@/components/admin/CaseStudiesManager';
 
 interface SectionData {
   [key: string]: any;
@@ -125,15 +126,28 @@ function ArrayItemEditor({
       </div>
       {isExpanded && (
         <div className="p-4 pt-0 border-t border-brand-grey-200 dark:border-brand-grey-700">
-          {fields.map((field) => (
-            <FieldEditor
-              key={field}
-              label={field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
-              value={item[field]}
-              onChange={(value) => onChange({ ...item, [field]: value })}
-              type={field.includes('description') || field.includes('content') ? 'textarea' : 'text'}
-            />
-          ))}
+          {fields.map((field) => {
+            // Determine input type based on field name
+            const getInputType = (fieldName: string): 'text' | 'textarea' | 'number' | 'url' => {
+              if (fieldName.includes('description') || fieldName.includes('content')) {
+                return 'textarea';
+              }
+              if (fieldName.toLowerCase() === 'number') {
+                return 'number';
+              }
+              return 'text';
+            };
+
+            return (
+              <FieldEditor
+                key={field}
+                label={field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
+                value={item[field]}
+                onChange={(value) => onChange({ ...item, [field]: value })}
+                type={getInputType(field)}
+              />
+            );
+          })}
         </div>
       )}
     </div>
@@ -474,7 +488,7 @@ export default function PageContentEditor() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'sections' | 'seo'>('sections');
+  const [activeTab, setActiveTab] = useState<'sections' | 'seo' | 'casestudies'>('sections');
 
   const loadContent = useCallback(async () => {
     try {
@@ -744,6 +758,17 @@ export default function PageContentEditor() {
           >
             SEO Settings
           </button>
+          {pageName === 'casestudies' && (
+            <button
+              onClick={() => setActiveTab('casestudies')}
+              className={`px-4 py-3 border-b-2 transition-colors ${activeTab === 'casestudies'
+                ? 'border-accent text-accent'
+                : 'border-transparent text-brand-grey-500 hover:text-brand-black dark:hover:text-white'
+                }`}
+            >
+              Case Studies
+            </button>
+          )}
         </div>
 
         {/* Content */}
@@ -826,6 +851,10 @@ export default function PageContentEditor() {
               placeholder="https://growthvalley.com/page"
             />
           </div>
+        )}
+
+        {activeTab === 'casestudies' && pageName === 'casestudies' && (
+          <CaseStudiesManager />
         )}
       </div>
     </AdminLayout>

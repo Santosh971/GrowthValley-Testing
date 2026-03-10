@@ -2,6 +2,97 @@ import Container from "@/components/Container";
 import Section from "@/components/Section";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getImageUrl } from "@/lib/utils";
+
+// Content block types
+interface ContentBlock {
+  id: string;
+  type: 'heading' | 'paragraph' | 'bulletList';
+  level?: 1 | 2 | 3;
+  text?: string;
+  items?: string[];
+}
+
+// Component to render content blocks
+function ContentBlocksRenderer({ blocks }: { blocks: ContentBlock[] }) {
+  return (
+    <>
+      {blocks.map((block) => {
+        switch (block.type) {
+          case 'heading':
+            const HeadingTag = `h${block.level || 2}` as keyof JSX.IntrinsicElements;
+            const headingClasses = {
+              1: 'text-heading-1',
+              2: 'text-heading-2 mt-12 mb-6',
+              3: 'text-heading-3 mt-8 mb-4',
+            };
+            return (
+              <HeadingTag
+                key={block.id}
+                className={`text-brand-black dark:text-white ${headingClasses[block.level || 2]}`}
+              >
+                {block.text}
+              </HeadingTag>
+            );
+
+          case 'paragraph':
+            return (
+              <p
+                key={block.id}
+                className="text-body text-brand-grey-600 dark:text-brand-grey-300 mb-6"
+              >
+                {block.text}
+              </p>
+            );
+
+          case 'bulletList':
+            return (
+              <ul
+                key={block.id}
+                className="list-disc pl-6 my-6 space-y-2"
+              >
+                {(block.items || []).map((item, index) => (
+                  <li
+                    key={index}
+                    className="text-body text-brand-grey-600 dark:text-brand-grey-300"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            );
+
+          default:
+            return null;
+        }
+      })}
+    </>
+  );
+}
+
+// Helper function to get excerpt from contentBlocks or content
+function getPostExcerpt(post: any, maxLength: number = 120): string {
+  if (post.contentBlocks && post.contentBlocks.length > 0) {
+    const text = post.contentBlocks
+      .map((block: ContentBlock) => {
+        if (block.type === 'heading' || block.type === 'paragraph') {
+          return block.text || '';
+        } else if (block.type === 'bulletList') {
+          return (block.items || []).join(' ');
+        }
+        return '';
+      })
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  }
+
+  // Fallback to old content field
+  const plainText = (post.content || '').replace(/<[^>]*>/g, '');
+  return plainText.length > maxLength ? plainText.substring(0, maxLength) + '...' : plainText;
+}
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -42,14 +133,35 @@ async function getRelatedBlogs(currentSlug: string, category: string) {
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const blog = await getBlog(slug);
-  
+
   if (!blog) {
     return { title: "Blog Post Not Found" };
   }
 
+  // Get description from contentBlocks or content
+  let description = blog.seo?.metaDescription;
+  if (!description) {
+    if (blog.contentBlocks && blog.contentBlocks.length > 0) {
+      description = blog.contentBlocks
+        .map((block: any) => {
+          if (block.type === 'heading' || block.type === 'paragraph') {
+            return block.text || '';
+          } else if (block.type === 'bulletList') {
+            return (block.items || []).join(' ');
+          }
+          return '';
+        })
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .substring(0, 160);
+    } else {
+      description = (blog.content || '').replace(/<[^>]*>/g, '').substring(0, 160);
+    }
+  }
+
   return {
     title: blog.seo?.metaTitle || `${blog.title} | Growth Valley Blog`,
-    description: blog.seo?.metaDescription || blog.excerpt,
+    description,
     keywords: blog.seo?.keywords || blog.tags,
   };
 }
@@ -133,8 +245,8 @@ export default async function BlogPostPage({ params }: Props) {
           <Container>
             <div className="relative aspect-video rounded-lg overflow-hidden">
               <img
-                src={blog.featuredImage}
-                alt={blog.title}
+                src={getImageUrl(blog.featuredImage)}
+                alt={blog.featuredImageAlt || blog.title}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -146,11 +258,6 @@ export default async function BlogPostPage({ params }: Props) {
       <Section className="py-16 md:py-24">
         <Container>
           <div className="max-w-3xl mx-auto">
-            {/* Excerpt */}
-            <p className="text-body-lg text-brand-grey-500 dark:text-brand-grey-400 mb-8 leading-relaxed">
-              {blog.excerpt}
-            </p>
-            
             {/* Article Content */}
             <article className="prose prose-lg dark:prose-invert max-w-none
               prose-headings:text-brand-black dark:prose-headings:text-white
@@ -163,7 +270,12 @@ export default async function BlogPostPage({ params }: Props) {
               prose-li:text-body prose-li:text-brand-grey-600 dark:prose-li:text-brand-grey-300
               prose-blockquote:border-l-accent prose-blockquote:bg-brand-grey-50 dark:prose-blockquote:bg-brand-grey-900 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:italic
             ">
-              <div dangerouslySetInnerHTML={{ __html: blog.content?.replace(/\n/g, '<br />') || '' }} />
+              {/* Render contentBlocks if available, fallback to old content field */}
+              {blog.contentBlocks && blog.contentBlocks.length > 0 ? (
+                <ContentBlocksRenderer blocks={blog.contentBlocks} />
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: blog.content?.replace(/\n/g, '<br />') || '' }} />
+              )}
             </article>
 
             {/* Tags */}
@@ -224,8 +336,8 @@ export default async function BlogPostPage({ params }: Props) {
                   {post.featuredImage && (
                     <div className="overflow-hidden">
                       <img
-                        src={post.featuredImage}
-                        alt={post.title}
+                        src={getImageUrl(post.featuredImage)}
+                        alt={post.featuredImageAlt || post.title}
                         className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
@@ -238,7 +350,7 @@ export default async function BlogPostPage({ params }: Props) {
                       {post.title}
                     </h3>
                     <p className="text-body-sm text-brand-grey-500 dark:text-brand-grey-400 mb-4 line-clamp-2">
-                      {post.excerpt}
+                      {getPostExcerpt(post, 120)}
                     </p>
                     <span className="text-body-sm text-accent">Read more →</span>
                   </div>

@@ -2,17 +2,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-interface ContactInfo {
-  email: string;
-  phone: string;
-  alternatePhone: string;
-  address: string;
-  city: string;
-  state: string;
-  country: string;
-  zipCode: string;
-}
-
 interface SocialLinks {
   linkedin: string;
   twitter: string;
@@ -54,7 +43,6 @@ interface SiteSettings {
   siteName: string;
   siteTagline: string;
   siteDescription: string;
-  contactInfo: ContactInfo;
   socialLinks: SocialLinks;
   hero: Hero;
   footer: Footer;
@@ -77,16 +65,6 @@ const defaultSettings: SiteSettings = {
   siteName: 'Growth Valley',
   siteTagline: 'Accelerate Your Growth',
   siteDescription: 'Predictable Revenue Systems for Scalable Businesses. We help B2B companies transform their revenue operations.',
-  contactInfo: {
-    email: '',
-    phone: '',
-    alternatePhone: '',
-    address: '',
-    city: '',
-    state: '',
-    country: '',
-    zipCode: '',
-  },
   socialLinks: {
     linkedin: '',
     twitter: '',
@@ -155,52 +133,23 @@ const SettingsContext = createContext<SettingsContextType>({
   refetch: async () => { },
 });
 
-export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+interface SettingsProviderProps {
+  children: ReactNode;
+  initialSettings?: SiteSettings | null;
+}
 
-  // const fetchSettings = async () => {
-  //   try {
-  //     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  //     const response = await fetch(`${apiUrl}/api/settings`, {
-  //       cache: 'no-store',
-  //       headers: {
-  //         'Cache-Control': 'no-cache',
-  //       },
-  //     });
-  //     console.log("Setting Response : ", response)
-
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       if (data.success && data.data) {
-  //         // Deep merge with defaults to ensure all fields exist
-  //         const mergedSettings = deepMerge(defaultSettings, data.data);
-  //         setSettings(mergedSettings);
-  //       } else {
-  //         setSettings(defaultSettings);
-  //       }
-  //     } else {
-  //       setSettings(defaultSettings);
-  //     }
-  //   } catch (error) {
-  //     console.error('Failed to fetch settings:', error);
-  //     setSettings(defaultSettings);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+export function SettingsProvider({ children, initialSettings }: SettingsProviderProps) {
+  const [settings, setSettings] = useState<SiteSettings | null>(initialSettings || null);
+  const [loading, setLoading] = useState(!initialSettings);
 
   const fetchSettings = async () => {
     try {
-      console.log("URL : ", process.env.NEXT_PUBLIC_API_URL)
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/settings`,
-        { cache: "no-store" }
+        { next: { revalidate: 300 } } // Cache for 5 minutes
       );
 
       const result = await response.json();
-
-      console.log("API SETTINGS:", result);
 
       if (result.success) {
         setSettings({
@@ -209,15 +158,19 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         });
       }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch settings:', err);
       setSettings(defaultSettings);
     } finally {
       setLoading(false);
     }
   };
+
+  // Only fetch on client if no initial settings were provided
   useEffect(() => {
-    fetchSettings();
-  }, []);
+    if (!initialSettings) {
+      fetchSettings();
+    }
+  }, [initialSettings]);
 
   return (
     <SettingsContext.Provider value={{ settings: settings || defaultSettings, loading, refetch: fetchSettings }}>
@@ -290,4 +243,4 @@ export function useLogo() {
 
 // Export defaults for use in other components
 export { defaultSettings };
-export type { SiteSettings, ContactInfo, SocialLinks, Hero, Footer, BusinessInfo, Tracking };
+export type { SiteSettings, SocialLinks, Hero, Footer, BusinessInfo, Tracking };

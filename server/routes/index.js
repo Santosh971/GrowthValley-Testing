@@ -5,6 +5,7 @@ module.exports = {
   caseStudies: require('./caseStudies'),
   clients: require('./client'),
   content: require('./content'),
+  cron: require('./cron'),
   enquiries: require('./enquiries'),
   settings: require('./settings'),
   seo: require('./seo'),

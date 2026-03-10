@@ -12,6 +12,16 @@ export const metadata = {
 
 export const dynamic = 'force-dynamic';
 
+// Helper to strip HTML and truncate content
+function getExcerpt(content: string, maxLength: number = 150): string {
+  if (!content) return '';
+  // Strip HTML tags
+  const plainText = content.replace(/<[^>]*>/g, '').replace(/\n/g, ' ');
+  // Truncate to max length
+  if (plainText.length <= maxLength) return plainText;
+  return plainText.substring(0, maxLength).trim() + '...';
+}
+
 async function getBlogs() {
   try {
     const res = await fetch(
@@ -68,7 +78,7 @@ export default async function InsightsPage() {
                       {post.title}
                     </h3>
                     <p className="text-body text-brand-grey-500 dark:text-brand-grey-400 mb-4">
-                      {post.excerpt}
+                      {getExcerpt(post.content, 200)}
                     </p>
                     <div className="flex items-center gap-4 text-body-sm text-brand-grey-400 dark:text-brand-grey-500">
                       <span>{post.author?.name || "Growth Valley"}</span>
@@ -109,7 +119,7 @@ export default async function InsightsPage() {
                       {post.title}
                     </h3>
                     <p className="text-body-sm text-brand-grey-500 dark:text-brand-grey-400 mb-4 line-clamp-3">
-                      {post.excerpt}
+                      {getExcerpt(post.content, 150)}
                     </p>
                     <div className="flex items-center justify-between text-body-sm text-brand-grey-400 dark:text-brand-grey-500">
                       <span>

@@ -3,7 +3,6 @@
 import Container from "@/components/Container";
 import ContactForm from "@/components/ContactForm";
 import { motion } from "framer-motion";
-import { useSettings } from "@/lib/settings-context";
 
 interface ContactClientProps {
   form: {
@@ -13,6 +12,16 @@ interface ContactClientProps {
     title: string;
     email: string;
     location: string;
+  } | null;
+  contactInfo: {
+    email: string;
+    phone: string;
+    alternatePhone: string;
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    zipCode: string;
   } | null;
   expectations: {
     title: string;
@@ -25,10 +34,7 @@ interface ContactClientProps {
 }
 
 
-export default function ContactClient({ form, info, expectations, successMessage }: ContactClientProps) {
-  console.log("Info :", info)
-  const { settings, loading } = useSettings();
-
+export default function ContactClient({ form, info, contactInfo, expectations, successMessage }: ContactClientProps) {
   // Safely get contact info value, ensuring it's a string
   const getContactValue = (value: any, fallback: string = ""): string => {
     if (value === null || value === undefined) return fallback;
@@ -38,10 +44,10 @@ export default function ContactClient({ form, info, expectations, successMessage
   };
 
   const location = [
-    getContactValue(settings?.contactInfo?.address),
-    getContactValue(settings?.contactInfo?.city, "Nashik"),
-    getContactValue(settings?.contactInfo?.state, "Maharashtra"),
-    getContactValue(settings?.contactInfo?.country, "India"),
+    getContactValue(contactInfo?.address),
+    getContactValue(contactInfo?.city, "Nashik"),
+    getContactValue(contactInfo?.state, "Maharashtra"),
+    getContactValue(contactInfo?.country, "India"),
   ]
     .filter(Boolean)
     .join(", ") || info?.location || "Nashik, Maharashtra, India";
@@ -50,19 +56,19 @@ export default function ContactClient({ form, info, expectations, successMessage
     {
       icon: "📧",
       label: "Email Us",
-      value: getContactValue(settings?.contactInfo?.email, info?.email || "hello@growthvalley.com"),
+      value: getContactValue(contactInfo?.email, info?.email || "hello@growthvalley.com"),
     },
     {
       icon: "📞",
       label: "Phone",
-      value: getContactValue(settings?.contactInfo?.phone),
+      value: getContactValue(contactInfo?.phone),
     },
     {
       icon: "📍",
       label: "Location",
       value:
-        getContactValue(settings?.contactInfo?.city) && getContactValue(settings?.contactInfo?.country)
-          ? `${getContactValue(settings.contactInfo.city)}, ${getContactValue(settings.contactInfo.country)}`
+        getContactValue(contactInfo?.city) && getContactValue(contactInfo?.country)
+          ? `${getContactValue(contactInfo.city)}, ${getContactValue(contactInfo.country)}`
           : info?.location || "Nashik, Maharashtra, India",
     },
     {
@@ -159,7 +165,7 @@ export default function ContactClient({ form, info, expectations, successMessage
               title: info?.title || "Direct Contact",
 
               email:
-                settings?.contactInfo?.email ||
+                contactInfo?.email ||
                 info?.email ||
                 "hello@growthvalley.com",
 

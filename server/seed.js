@@ -15,7 +15,6 @@ const blogPosts = [
   {
     title: 'The Future of B2B Lead Generation: AI-Powered Strategies for 2024',
     slug: 'future-b2b-lead-generation-ai-2024',
-    excerpt: 'Discover how artificial intelligence is revolutionizing B2B lead generation and helping companies achieve unprecedented growth.',
     content: `
 # The Future of B2B Lead Generation: AI-Powered Strategies for 2024
 
@@ -65,7 +64,6 @@ The future of B2B lead generation is intelligent, automated, and infinitely more
   {
     title: 'Marketing Automation Mastery: From Setup to Scale',
     slug: 'marketing-automation-mastery-setup-scale',
-    excerpt: 'A comprehensive guide to implementing marketing automation that actually drives results for your business.',
     content: `
 # Marketing Automation Mastery: From Setup to Scale
 
@@ -137,7 +135,6 @@ Marketing automation done right isn't about doing less—it's about doing more w
   {
     title: 'CRM Implementation: Avoiding the 70% Failure Rate',
     slug: 'crm-implementation-avoiding-failure',
-    excerpt: 'Most CRM implementations fail. Here\'s how to make yours succeed.',
     content: `
 # CRM Implementation: Avoiding the 70% Failure Rate
 
@@ -322,14 +319,6 @@ const defaultSettings = {
   siteName: 'Growth Valley',
   siteTagline: 'B2B Growth Partners',
   siteDescription: 'We help B2B companies build predictable revenue engines through strategic consulting, marketing automation, and CRM implementation.',
-  contactInfo: {
-    email: 'hello@growthvalley.in',
-    phone: '+91 123 456 7890',
-    address: 'Nashik, Maharashtra',
-    city: 'Nashik',
-    state: 'Maharashtra',
-    country: 'India'
-  },
   socialLinks: {
     linkedin: 'https://linkedin.com/company/growthvalley',
     twitter: 'https://twitter.com/growthvalley'

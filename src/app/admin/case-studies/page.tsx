@@ -10,11 +10,8 @@ interface CaseStudy {
   _id: string;
   title: string;
   slug: string;
-  industry: string;
-  clientName: string;
+  challenge?: string;
   status: string;
-  featured: boolean;
-  createdAt: string;
 }
 
 export default function CaseStudiesListPage() {
@@ -65,18 +62,6 @@ export default function CaseStudiesListPage() {
             ← Back to Dashboard
           </Link>
         </div>
-        {/* <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-brand-black dark:text-white">Case Studies</h1>
-            <p className="text-brand-grey-500 dark:text-brand-grey-400 mt-1">{caseStudies.length} total</p>
-          </div>
-          <Link
-            href="/admin/case-studies/new"
-            className="px-6 py-3 bg-accent text-brand-black font-semibold rounded-lg hover:bg-accent-light transition-colors"
-          >
-            + New Case Study
-          </Link>
-        </div> */}
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8">
           <div className="mb-3 sm:mb-0">
@@ -94,6 +79,7 @@ export default function CaseStudiesListPage() {
             + New Case Study
           </Link>
         </div>
+
         {/* Table */}
         <div className="bg-white dark:bg-brand-grey-900 rounded-lg border border-brand-grey-200 dark:border-brand-grey-800 overflow-hidden">
           {loading ? (
@@ -109,8 +95,7 @@ export default function CaseStudiesListPage() {
               <thead className="bg-brand-grey-50 dark:bg-brand-grey-800 border-b border-brand-grey-200 dark:border-brand-grey-700">
                 <tr>
                   <th className="text-left px-6 py-4 text-sm font-medium text-brand-grey-500 dark:text-brand-grey-400">Title</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-brand-grey-500 dark:text-brand-grey-400">Industry</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-brand-grey-500 dark:text-brand-grey-400">Client</th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-brand-grey-500 dark:text-brand-grey-400">Challenge</th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-brand-grey-500 dark:text-brand-grey-400">Status</th>
                   <th className="text-right px-6 py-4 text-sm font-medium text-brand-grey-500 dark:text-brand-grey-400">Actions</th>
                 </tr>
@@ -119,15 +104,11 @@ export default function CaseStudiesListPage() {
                 {caseStudies.map((cs) => (
                   <tr key={cs._id} className="hover:bg-brand-grey-50 dark:hover:bg-brand-grey-800">
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-brand-black dark:text-white">{cs.title}</p>
-                        {cs.featured && (
-                          <span className="px-2 py-0.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded">Featured</span>
-                        )}
-                      </div>
+                      <p className="font-medium text-brand-black dark:text-white">{cs.title}</p>
                     </td>
-                    <td className="px-6 py-4 text-brand-grey-600 dark:text-brand-grey-300">{cs.industry}</td>
-                    <td className="px-6 py-4 text-brand-grey-600 dark:text-brand-grey-300">{cs.clientName}</td>
+                    <td className="px-6 py-4 text-brand-grey-600 dark:text-brand-grey-300 max-w-md truncate">
+                      {cs.challenge?.substring(0, 80)}...
+                    </td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 text-xs rounded-full ${cs.status === 'published' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
                           'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'

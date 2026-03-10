@@ -30,7 +30,7 @@ exports.updateSettings = async (req, res) => {
     // Update allowed fields
     const allowedUpdates = [
       'siteName', 'siteTagline', 'siteDescription',
-      'contactInfo', 'socialLinks', 'hero', 'footer',
+      'socialLinks', 'hero', 'footer',
       'businessInfo', 'seo', 'tracking', 'customCss', 'customJs',
       'maintenanceMode', 'favicon',
     ];

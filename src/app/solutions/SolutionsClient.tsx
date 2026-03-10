@@ -10,8 +10,22 @@ interface Solution {
   id: string;
   title: string;
   description: string;
-  features: string[];
-  outcomes: string[];
+  features: string[] | string | null | undefined;
+  outcomes: string[] | string | null | undefined;
+}
+
+/**
+ * Safely convert features/outcomes to an array
+ * Handles: array (returns as-is), string (splits by comma), null/undefined (returns empty array)
+ */
+function toArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    return value.split(',').map(item => item.trim()).filter(Boolean);
+  }
+  return [];
 }
 
 interface SolutionsClientProps {
@@ -84,6 +98,7 @@ export default function SolutionsClient({ hero, solutions, cta }: SolutionsClien
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         />
 
+
         <Container className="relative z-10">
           <div className="space-y-32">
             {solutions?.map((solution, index) => (
@@ -94,10 +109,9 @@ export default function SolutionsClient({ hero, solutions, cta }: SolutionsClien
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.6, delay: 0.1 }}
-                className={`grid lg:grid-cols-2 gap-12 lg:gap-16 items-start ${index % 2 === 1 ? "lg:grid-flow-dense" : ""
-                  }`}
+                className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center"
               >
-                <div className={index % 2 === 1 ? "lg:col-start-2" : ""}>
+                <div>
                   <motion.div
                     className="text-accent mb-6"
                     whileHover={{ scale: 1.1, rotate: 5 }}
@@ -106,10 +120,10 @@ export default function SolutionsClient({ hero, solutions, cta }: SolutionsClien
                     {solutionIcons[solution.id] || solutionIcons['revenue-architecture']}
                   </motion.div>
                   <h2 className="text-heading-2 text-brand-black dark:text-white mb-4">
-                    {solution.title}
+                    {solution.title || 'Untitled Solution'}
                   </h2>
-                  <p className="text-body-lg text-brand-grey-500 dark:text-brand-grey-400 mb-8">
-                    {solution.description}
+                  <p className="text-body-lg text-left text-brand-grey-500 dark:text-brand-grey-400 mb-8">
+                    {solution.description || ''}
                   </p>
 
                   <div className="mb-8">
@@ -117,7 +131,7 @@ export default function SolutionsClient({ hero, solutions, cta }: SolutionsClien
                       What We Deliver
                     </h4>
                     <ul className="space-y-3">
-                      {solution.features.map((feature, idx) => (
+                      {toArray(solution.features).map((feature, idx) => (
                         <motion.li
                           key={idx}
                           className="flex items-start gap-3"
@@ -152,19 +166,15 @@ export default function SolutionsClient({ hero, solutions, cta }: SolutionsClien
                 </div>
 
                 <motion.div
-                  className={`bg-brand-grey-50 dark:bg-brand-grey-900 p-8 relative overflow-hidden ${index % 2 === 1 ? "lg:col-start-1 lg:row-start-1" : ""
-                    }`}
+                  className="bg-brand-grey-50 dark:bg-brand-grey-900 p-8 relative overflow-hidden"
                   whileHover={{ boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}
                   transition={{ type: 'spring', stiffness: 300 }}
                 >
-                  {/* Decorative corner */}
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-accent/10" />
-
                   <h4 className="text-label text-brand-grey-400 dark:text-brand-grey-500 uppercase mb-6">
                     Expected Outcomes
                   </h4>
                   <div className="space-y-4">
-                    {solution.outcomes.map((outcome, idx) => (
+                    {toArray(solution.outcomes).map((outcome, idx) => (
                       <motion.div
                         key={idx}
                         className="flex items-center gap-4 border-b border-brand-grey-200 dark:border-brand-grey-700 pb-4 last:border-0 last:pb-0"
@@ -220,7 +230,7 @@ export default function SolutionsClient({ hero, solutions, cta }: SolutionsClien
             <h2 className="text-heading-2 text-brand-black dark:text-white mb-6">
               {cta?.title || "Not sure which solution you need?"}
             </h2>
-            <p className="text-body-lg text-brand-grey-500 dark:text-brand-grey-400 mb-10">
+            <p className="text-body-lg text-center whitespace-nowrap text-brand-grey-500 dark:text-brand-grey-400 mb-10">
               {cta?.description || "Our discovery process identifies the highest-impact opportunities for your specific situation."}
             </p>
             <motion.div
