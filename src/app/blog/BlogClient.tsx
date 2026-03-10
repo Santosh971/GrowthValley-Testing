@@ -3,15 +3,24 @@
 import Container from "@/components/Container";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { getImageUrl } from "@/lib/utils";
 
 interface BlogPost {
   _id: string;
   title: string;
   slug: string;
-  excerpt: string;
+  content: string;
+  contentBlocks?: {
+    id: string;
+    type: 'heading' | 'paragraph' | 'bulletList';
+    level?: 1 | 2 | 3;
+    text?: string;
+    items?: string[];
+  }[];
   category: string;
   author?: { name: string };
   featuredImage?: string;
+  featuredImageAlt?: string;
   featured?: boolean;
   status: string;
   publishDate?: string;
@@ -23,6 +32,36 @@ interface BlogClientProps {
   featuredPosts: BlogPost[];
   recentPosts: BlogPost[];
   publishedBlogs: BlogPost[];
+}
+
+// Helper to get excerpt from contentBlocks or content
+function getExcerpt(post: BlogPost, maxLength: number = 150): string {
+  // First try to get text from contentBlocks
+  if (post.contentBlocks && post.contentBlocks.length > 0) {
+    const text = post.contentBlocks
+      .map(block => {
+        if (block.type === 'heading' || block.type === 'paragraph') {
+          return block.text || '';
+        } else if (block.type === 'bulletList') {
+          return (block.items || []).join(' ');
+        }
+        return '';
+      })
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
+  }
+
+  // Fallback to old content field
+  if (!post.content) return '';
+  // Strip HTML tags
+  const plainText = post.content.replace(/<[^>]*>/g, '').replace(/\n/g, ' ');
+  // Truncate to max length
+  if (plainText.length <= maxLength) return plainText;
+  return plainText.substring(0, maxLength).trim() + '...';
 }
 
 const containerVariants = {
@@ -84,9 +123,9 @@ export default function BlogClient({ featuredPosts, recentPosts, publishedBlogs 
                   >
                     {post.featuredImage && (
                       <div className="overflow-hidden">
-                        <motion.img 
-                          src={post.featuredImage} 
-                          alt={post.title}
+                        <motion.img
+                          src={getImageUrl(post.featuredImage)}
+                          alt={post.featuredImageAlt || post.title}
                           className="w-full h-48 object-cover"
                           whileHover={{ scale: 1.05 }}
                           transition={{ duration: 0.3 }}
@@ -101,7 +140,7 @@ export default function BlogClient({ featuredPosts, recentPosts, publishedBlogs 
                         {post.title}
                       </h3>
                       <p className="text-body text-brand-grey-500 dark:text-brand-grey-400 mb-4 line-clamp-3">
-                        {post.excerpt}
+                        {getExcerpt(post, 200)}
                       </p>
                       <div className="flex items-center gap-4 text-body-sm text-brand-grey-400 dark:text-brand-grey-500">
                         <span>{post.author?.name || "Growth Valley"}</span>
@@ -168,9 +207,9 @@ export default function BlogClient({ featuredPosts, recentPosts, publishedBlogs 
                   >
                     {post.featuredImage && (
                       <div className="overflow-hidden">
-                        <motion.img 
-                          src={post.featuredImage} 
-                          alt={post.title}
+                        <motion.img
+                          src={getImageUrl(post.featuredImage)}
+                          alt={post.featuredImageAlt || post.title}
                           className="w-full h-48 object-cover"
                           whileHover={{ scale: 1.05 }}
                           transition={{ duration: 0.3 }}
@@ -185,7 +224,7 @@ export default function BlogClient({ featuredPosts, recentPosts, publishedBlogs 
                         {post.title}
                       </h3>
                       <p className="text-body-sm text-brand-grey-500 dark:text-brand-grey-400 mb-4 line-clamp-3">
-                        {post.excerpt}
+                        {getExcerpt(post, 150)}
                       </p>
                       <div className="flex items-center justify-between text-body-sm text-brand-grey-400 dark:text-brand-grey-500">
                         <span>{new Date(post.publishDate || post.createdAt).toLocaleDateString('en-US', { 

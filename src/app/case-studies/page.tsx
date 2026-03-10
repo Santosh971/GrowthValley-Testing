@@ -10,12 +10,8 @@ interface CaseStudy {
   _id?: string;
   slug: string;
   title: string;
-  industry: string;
   challenge?: string;
-  featured?: boolean;
-  featuredImage?: string;
-  clientLogo?: string;
-  results?: Array<{ value: string; metric: string }>;
+  solution?: string;
 }
 
 // Interface for header section

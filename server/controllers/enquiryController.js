@@ -1,4 +1,4 @@
-const { Enquiry, Settings } = require('../models');
+const { Enquiry, Settings, Content } = require('../models');
 const csv = require('csv-stringify/sync');
 const { sendEnquiryNotification, sendEnquiryConfirmation } = require('../services/email');
 const config = require('../config');
@@ -22,9 +22,24 @@ exports.createEnquiry = async (req, res) => {
 
     // Send notification email to admin and confirmation to user
     try {
-      // Get admin email from settings or fall back to config
-      const settings = await Settings.getSingleton();
-      const adminEmail = settings?.contactInfo?.email || config.adminEmail;
+      // Get admin email from Contact page content or fall back to config
+      // First try Contact page content, then Settings as fallback
+      let adminEmail = null;
+
+      try {
+        const contactContent = await Content.findOne({ page: 'contact' });
+        if (contactContent?.sections?.contactInfo?.email) {
+          adminEmail = contactContent.sections.contactInfo.email;
+        }
+      } catch (e) {
+        // Contact content not found, try Settings
+      }
+
+      // Fallback to Settings contactInfo.email (for backwards compatibility)
+      if (!adminEmail) {
+        const settings = await Settings.getSingleton();
+        adminEmail = settings?.contactInfo?.email || config.adminEmail;
+      }
 
       // Send notification to admin (don't wait for it)
       if (adminEmail) {

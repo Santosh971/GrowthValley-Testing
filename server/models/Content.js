@@ -354,6 +354,16 @@ const defaultContentStructures = {
       email: 'hello@growthvalley.com',
       location: 'Nashik, Maharashtra, India'
     },
+    contactInfo: {
+      email: '',
+      phone: '',
+      alternatePhone: '',
+      address: '',
+      city: '',
+      state: '',
+      country: '',
+      zipCode: ''
+    },
     expectations: {
       title: 'What to Expect',
       items: [

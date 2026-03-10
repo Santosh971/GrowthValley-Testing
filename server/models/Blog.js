@@ -40,15 +40,42 @@ const blogSchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  excerpt: {
+  featuredImageAlt: {
     type: String,
-    required: [true, 'Excerpt is required'],
-    maxlength: [300, 'Excerpt cannot exceed 300 characters']
+    default: ''
   },
   content: {
     type: String,
-    required: [true, 'Content is required']
+    default: ''
   },
+  // Content blocks - structured content array
+  contentBlocks: [{
+    _id: false,
+    id: {
+      type: String,
+      default: () => new mongoose.Types.ObjectId().toString()
+    },
+    type: {
+      type: String,
+      enum: ['heading', 'paragraph', 'bulletList'],
+      required: true
+    },
+    // For heading type
+    level: {
+      type: Number,
+      enum: [1, 2, 3],
+      default: 2
+    },
+    // For heading and paragraph types
+    text: {
+      type: String,
+      default: ''
+    },
+    // For bulletList type
+    items: [{
+      type: String
+    }]
+  }],
   category: {
     type: String,
     required: [true, 'Category is required'],
@@ -66,10 +93,14 @@ const blogSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['draft', 'published', 'archived'],
+    enum: ['draft', 'published', 'archived', 'scheduled'],
     default: 'draft'
   },
   publishDate: {
+    type: Date,
+    default: null
+  },
+  scheduledPublishDate: {
     type: Date,
     default: null
   },
@@ -104,16 +135,41 @@ blogSchema.index({ createdAt: -1 });
 
 // Calculate read time before saving
 blogSchema.pre('save', function(next) {
-  if (this.isModified('content')) {
-    const wordCount = this.content.split(/\s+/).length;
+  // Calculate read time from contentBlocks or content
+  if (this.isModified('content') || this.isModified('contentBlocks')) {
+    let totalText = '';
+
+    // Extract text from contentBlocks if available
+    if (this.contentBlocks && this.contentBlocks.length > 0) {
+      for (const block of this.contentBlocks) {
+        if (block.type === 'heading' || block.type === 'paragraph') {
+          totalText += ' ' + (block.text || '');
+        } else if (block.type === 'bulletList' && block.items) {
+          totalText += ' ' + block.items.join(' ');
+        }
+      }
+    } else if (this.content) {
+      totalText = this.content;
+    }
+
+    const wordCount = totalText.split(/\s+/).filter(w => w.length > 0).length;
     this.readTime = Math.max(1, Math.ceil(wordCount / 200)); // ~200 words per minute
   }
-  
+
   // Set publishDate when status changes to published
   if (this.isModified('status') && this.status === 'published' && !this.publishDate) {
     this.publishDate = new Date();
   }
-  
+
+  // For scheduled posts, ensure scheduledPublishDate is set
+  if (this.isModified('status') && this.status === 'scheduled') {
+    // scheduledPublishDate should be set by the admin
+    // If not set, default to 24 hours from now
+    if (!this.scheduledPublishDate) {
+      this.scheduledPublishDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    }
+  }
+
   next();
 });
 

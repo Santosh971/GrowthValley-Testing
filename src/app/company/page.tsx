@@ -53,7 +53,6 @@ export default async function CompanyPage() {
   }>(content, 'approach');
   const cta = getSection<{ title: string; description: string; buttonText: string; buttonLink: string }>(content, 'cta');
 
-  console.log("approach  :", approach)
   return (
     <>
       <PageHeader

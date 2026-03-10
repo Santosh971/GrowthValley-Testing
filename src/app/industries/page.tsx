@@ -66,7 +66,6 @@ export default async function IndustriesPage() {
   }>>(content, 'industries');
   const cta = getSection<{ title: string; description: string; buttonText: string; buttonLink: string }>(content, 'cta');
 
-  console.log("Industry industriesRaw : ", industriesRaw)
   // Ensure industries is always an array
   const industries = Array.isArray(industriesRaw) ? industriesRaw : [];
 

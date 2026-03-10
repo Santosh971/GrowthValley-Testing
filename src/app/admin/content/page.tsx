@@ -40,7 +40,6 @@ export default function ContentManagementPage() {
       setLoading(true);
       const response = await contentAPI.getAllPages();
       if (response.success) {
-        console.log("ALL PAGES FROM API:", response.data);
         setPages(response.data);
       }
     } catch (err: any) {
@@ -68,24 +67,7 @@ export default function ContentManagementPage() {
   return (
     <AdminLayout>
       <div className="p-8">
-        {/* Header */}
-        {/* <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-heading-1 text-brand-black dark:text-white mb-2">Content Management</h1>
-            <p className="text-body text-brand-grey-500 dark:text-brand-grey-400">
-              Manage all page content dynamically. Edit sections, update text, and customize your site.
-            </p>
-          </div>
-          <Link
-            href="/admin"
-            className="px-4 py-2 border border-brand-grey-300 dark:border-brand-grey-700 text-brand-black dark:text-white rounded-lg hover:border-accent transition-colors flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
-            </svg>
-            Back to Dashboard
-          </Link>
-        </div> */}
+
 
         <div className="mb-6 sm:mb-8 flex flex-col-reverse sm:flex-row items-start sm:items-center justify-between">
           {/* Content Title + Description */}

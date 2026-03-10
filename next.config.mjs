@@ -8,6 +8,11 @@ const nextConfig = {
     // Ignore TypeScript errors during build (pre-existing issues)
     ignoreBuildErrors: true,
   },
+
+  // Enable gzip compression
+  compress: true,
+
+  // Optimized image configuration
   images: {
     remotePatterns: [
       {
@@ -17,6 +22,18 @@ const nextConfig = {
         pathname: "/uploads/**",
       },
     ],
+    // Enable modern image formats
+    formats: ['image/avif', 'image/webp'],
+    // Optimized device sizes for responsive images
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    // Common icon and image sizes
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
+
+  // Experimental optimizations
+  experimental: {
+    // Optimize package imports to reduce bundle size
+    optimizePackageImports: ['framer-motion', 'react-icons'],
   },
 };
 

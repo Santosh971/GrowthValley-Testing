@@ -1,32 +1,68 @@
-import Container from "@/components/Container";
-import Section, { SectionHeader } from "@/components/Section";
-import Button, { CTAButton } from "@/components/Button";
-import Card, { StatCard } from "@/components/Card";
-import Link from "next/link";
-import { getPageContent, getSection, PageContent } from "@/lib/content";
-import {
-  AnimatedHeroSection,
-  AnimatedCredibilitySection,
-  AnimatedProblemSection,
-  AnimatedSolutionSection,
-  AnimatedIndustriesSection,
-  AnimatedTestimonialsSection,
-  AnimatedClientLogosSection,
-  AnimatedCaseStudyPreview,
-  AnimatedOperatingModel,
-  AnimatedFinalCTA,
-} from "@/components/AnimatedSections";
+import { getPageContent, getSection } from "@/lib/content";
+import dynamic from "next/dynamic";
+
+// Above-fold component - loaded with SSR for initial paint SEO
+const AnimatedHeroSection = dynamic(
+  () => import("@/components/AnimatedSections").then(m => m.AnimatedHeroSection),
+  { ssr: true }
+);
+
+// Below-fold components - lazy loaded for performance
+const AnimatedCredibilitySection = dynamic(
+  () => import("@/components/AnimatedSections").then(m => m.AnimatedCredibilitySection),
+  { ssr: false }
+);
+
+const AnimatedClientLogosSection = dynamic(
+  () => import("@/components/AnimatedSections").then(m => m.AnimatedClientLogosSection),
+  { ssr: false }
+);
+
+const AnimatedProblemSection = dynamic(
+  () => import("@/components/AnimatedSections").then(m => m.AnimatedProblemSection),
+  { ssr: false }
+);
+
+const AnimatedSolutionSection = dynamic(
+  () => import("@/components/AnimatedSections").then(m => m.AnimatedSolutionSection),
+  { ssr: false }
+);
+
+const AnimatedIndustriesSection = dynamic(
+  () => import("@/components/AnimatedSections").then(m => m.AnimatedIndustriesSection),
+  { ssr: false }
+);
+
+const AnimatedTestimonialsSection = dynamic(
+  () => import("@/components/AnimatedSections").then(m => m.AnimatedTestimonialsSection),
+  { ssr: false }
+);
+
+const AnimatedCaseStudyPreview = dynamic(
+  () => import("@/components/AnimatedSections").then(m => m.AnimatedCaseStudyPreview),
+  { ssr: false }
+);
+
+const AnimatedOperatingModel = dynamic(
+  () => import("@/components/AnimatedSections").then(m => m.AnimatedOperatingModel),
+  { ssr: false }
+);
+
+const AnimatedFinalCTA = dynamic(
+  () => import("@/components/AnimatedSections").then(m => m.AnimatedFinalCTA),
+  { ssr: false }
+);
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 // Disable static generation for dynamic content
-export const dynamic = 'force-dynamic';
-
+// export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 // Fetch testimonials from API
 async function getTestimonials() {
   try {
     const res = await fetch(`${API_URL}/api/testimonials?status=active`, {
-      cache: 'no-store'
+      next: { revalidate: 60 }
     });
     const data = await res.json();
     return data.success ? data.data : [];
@@ -39,7 +75,7 @@ async function getTestimonials() {
 async function getClients() {
   try {
     const res = await fetch(`${API_URL}/api/clients?status=active`, {
-      cache: 'no-store'
+      next: { revalidate: 60 }
     });
     const data = await res.json();
     return data.success ? data.data : [];
@@ -51,23 +87,41 @@ async function getClients() {
 // Fetch featured case studies from API and transform for home page
 async function getFeaturedCaseStudies() {
   try {
-    const res = await fetch(`${API_URL}/api/case-studies/featured?limit=2`, {
-      cache: 'no-store'
+    // First try to get featured case studies
+    const featuredRes = await fetch(`${API_URL}/api/case-studies/featured?limit=6`, {
+      next: { revalidate: 60 }
     });
-    const data = await res.json();
+    const featuredData = await featuredRes.json();
 
-    if (!data.success || !data.data) {
-      return [];
+    if (featuredData.success && featuredData.data && featuredData.data.length > 0) {
+      // Transform featured case studies to match component format
+      return featuredData.data.map((study: any) => ({
+        client: study.clientName || study.title,
+        industry: study.industry || 'Other',
+        result: study.results?.[0]?.value || study.results?.[0]?.metric || '',
+        description: study.challenge || study.solution || '',
+        link: `/case-studies/${study.slug}`
+      }));
     }
 
-    // Transform case studies to match component format
-    return data.data.map((study: any) => ({
-      client: study.clientName,
-      industry: study.industry,
-      result: study.results?.[0]?.value || study.results?.[0]?.metric || '',
-      description: study.challenge,
-      link: `/case-studies/${study.slug}`
-    }));
+    // If no featured case studies, fetch all published case studies
+    const allRes = await fetch(`${API_URL}/api/case-studies?limit=6`, {
+      next: { revalidate: 60 }
+    });
+    const allData = await allRes.json();
+
+    if (allData.success && allData.data) {
+      // Transform all case studies to match component format
+      return allData.data.map((study: any) => ({
+        client: study.clientName || study.title,
+        industry: study.industry || 'Other',
+        result: study.results?.[0]?.value || study.results?.[0]?.metric || '',
+        description: study.challenge || study.solution || '',
+        link: `/case-studies/${study.slug}`
+      }));
+    }
+
+    return [];
   } catch {
     return [];
   }

@@ -17,7 +17,7 @@ const getBlogs = async (req, res) => {
     const filter = { status: 'published', publishDate: { $lte: new Date() } };
     
     if (search) {
-      Object.assign(filter, buildSearchFilter(search, ['title', 'excerpt', 'category']));
+      Object.assign(filter, buildSearchFilter(search, ['title', 'content', 'category']));
     }
     
     if (req.query.category) {
@@ -108,7 +108,7 @@ const getAdminBlogs = async (req, res) => {
     const filter = {};
     
     if (search) {
-      Object.assign(filter, buildSearchFilter(search, ['title', 'slug', 'excerpt', 'category']));
+      Object.assign(filter, buildSearchFilter(search, ['title', 'slug', 'content', 'category']));
     }
     
     if (req.query.status) {

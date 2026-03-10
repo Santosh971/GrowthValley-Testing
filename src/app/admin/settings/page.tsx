@@ -9,16 +9,6 @@ interface SiteSettings {
   siteName: string;
   siteTagline: string;
   siteDescription: string;
-  contactInfo: {
-    email: string;
-    phone: string;
-    alternatePhone: string;
-    address: string;
-    city: string;
-    state: string;
-    country: string;
-    zipCode: string;
-  };
   socialLinks: {
     linkedin: string;
     twitter: string;
@@ -66,7 +56,6 @@ export default function SettingsPage() {
     siteName: '',
     siteTagline: '',
     siteDescription: '',
-    contactInfo: { email: '', phone: '', alternatePhone: '', address: '', city: '', state: '', country: '', zipCode: '' },
     socialLinks: { linkedin: '', twitter: '', facebook: '', instagram: '', youtube: '' },
     businessInfo: { legalName: '', foundedYear: '', teamSize: '', description: '', logo: '', logoDark: '' },
     hero: { title: '', subtitle: '', ctaText: '', ctaLink: '' },
@@ -96,7 +85,6 @@ export default function SettingsPage() {
           siteName: response.data.siteName || '',
           siteTagline: response.data.siteTagline || '',
           siteDescription: response.data.siteDescription || '',
-          contactInfo: response.data.contactInfo || { email: '', phone: '', alternatePhone: '', address: '', city: '', state: '', country: '', zipCode: '' },
           socialLinks: response.data.socialLinks || { linkedin: '', twitter: '', facebook: '', instagram: '', youtube: '' },
           businessInfo: response.data.businessInfo || { legalName: '', foundedYear: '', teamSize: '', description: '', logo: '', logoDark: '' },
           hero: response.data.hero || { title: '', subtitle: '', ctaText: '', ctaLink: '' },
@@ -200,7 +188,6 @@ export default function SettingsPage() {
       };
 
       const response = await settingsAPI.update(data);
-      console.log("Seting Update Response : ", response)
       alert('Settings saved successfully!');
     } catch (error: any) {
       alert(error.message || 'Failed to save settings');
@@ -488,109 +475,6 @@ export default function SettingsPage() {
                 rows={3}
                 className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
               />
-            </div>
-          </div>
-
-          {/* Contact Info */}
-          <div className="bg-white dark:bg-brand-grey-900 p-6 rounded-lg border border-brand-grey-200 dark:border-brand-grey-800">
-            <h2 className="text-lg font-semibold text-brand-black dark:text-white mb-4">Contact Information</h2>
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Email</label>
-                <input
-                  type="email"
-                  value={formData.contactInfo.email}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    contactInfo: { ...prev.contactInfo, email: e.target.value },
-                  }))}
-                  className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Phone</label>
-                <input
-                  type="text"
-                  value={formData.contactInfo.phone}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    contactInfo: { ...prev.contactInfo, phone: e.target.value },
-                  }))}
-                  className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Alternate Phone</label>
-                <input
-                  type="text"
-                  value={formData.contactInfo.alternatePhone}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    contactInfo: { ...prev.contactInfo, alternatePhone: e.target.value },
-                  }))}
-                  className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Address</label>
-                <input
-                  type="text"
-                  value={formData.contactInfo.address}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    contactInfo: { ...prev.contactInfo, address: e.target.value },
-                  }))}
-                  className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">City</label>
-                <input
-                  type="text"
-                  value={formData.contactInfo.city}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    contactInfo: { ...prev.contactInfo, city: e.target.value },
-                  }))}
-                  className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">State</label>
-                <input
-                  type="text"
-                  value={formData.contactInfo.state}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    contactInfo: { ...prev.contactInfo, state: e.target.value },
-                  }))}
-                  className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Country</label>
-                <input
-                  type="text"
-                  value={formData.contactInfo.country}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    contactInfo: { ...prev.contactInfo, country: e.target.value },
-                  }))}
-                  className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Zip Code</label>
-                <input
-                  type="text"
-                  value={formData.contactInfo.zipCode}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    contactInfo: { ...prev.contactInfo, zipCode: e.target.value },
-                  }))}
-                  className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
             </div>
           </div>
 

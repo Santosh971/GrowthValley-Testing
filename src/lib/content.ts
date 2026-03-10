@@ -249,6 +249,16 @@ const defaultContent = {
       email: 'hello@growthvalley.com',
       location: 'Nashik, Maharashtra, India'
     },
+    contactInfo: {
+      email: '',
+      phone: '',
+      alternatePhone: '',
+      address: '',
+      city: '',
+      state: '',
+      country: '',
+      zipCode: ''
+    },
     expectations: {
       title: 'What to Expect',
       items: [
@@ -450,11 +460,7 @@ export async function getPageContent(page: string): Promise<PageContent> {
 
   try {
     const response = await fetch(`${API_URL}/api/content/${pageKey}`, {
-      cache: 'no-store',
-      next: { revalidate: 0 },
-      headers: {
-        'Cache-Control': 'no-cache',
-      },
+      next: { revalidate: 60 },
     });
 
     if (response.ok) {

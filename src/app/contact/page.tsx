@@ -26,6 +26,16 @@ export default async function ContactPage() {
     email: string;
     location: string;
   }>(content, 'info');
+  const contactInfo = getSection<{
+    email: string;
+    phone: string;
+    alternatePhone: string;
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    zipCode: string;
+  }>(content, 'contactInfo');
   const expectations = getSection<{
     title: string;
     items: string[];
@@ -42,9 +52,10 @@ export default async function ContactPage() {
         description={hero?.description || "Ready to transform your revenue operations? Let's start the conversation."}
         breadcrumb={[{ label: "Contact", href: "/contact" }]}
       />
-      <ContactClient 
+      <ContactClient
         form={form}
         info={info}
+        contactInfo={contactInfo}
         expectations={expectations}
         successMessage={successMessage}
       />

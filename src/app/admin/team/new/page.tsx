@@ -73,7 +73,7 @@ export default function NewTeamMemberPage() {
             {/* Basic Info */}
             <div className="bg-white dark:bg-brand-grey-900 p-6 rounded-lg border border-brand-grey-200 dark:border-brand-grey-800">
               <h2 className="text-lg font-semibold text-brand-black dark:text-white mb-4">Basic Information</h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Name *</label>
@@ -115,7 +115,7 @@ export default function NewTeamMemberPage() {
             {/* Photo */}
             <div className="bg-white dark:bg-brand-grey-900 p-6 rounded-lg border border-brand-grey-200 dark:border-brand-grey-800">
               <h2 className="text-lg font-semibold text-brand-black dark:text-white mb-4">Photo</h2>
-              
+
               <div className="border-2 border-dashed border-brand-grey-300 dark:border-brand-grey-700 rounded-lg p-6 text-center">
                 {formData.image ? (
                   <div className="relative inline-block">
@@ -155,7 +155,7 @@ export default function NewTeamMemberPage() {
             {/* Contact */}
             <div className="bg-white dark:bg-brand-grey-900 p-6 rounded-lg border border-brand-grey-200 dark:border-brand-grey-800">
               <h2 className="text-lg font-semibold text-brand-black dark:text-white mb-4">Contact</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Email</label>
@@ -183,7 +183,7 @@ export default function NewTeamMemberPage() {
             {/* Social Links */}
             <div className="bg-white dark:bg-brand-grey-900 p-6 rounded-lg border border-brand-grey-200 dark:border-brand-grey-800">
               <h2 className="text-lg font-semibold text-brand-black dark:text-white mb-4">Social Links</h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">LinkedIn</label>
@@ -196,7 +196,7 @@ export default function NewTeamMemberPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Twitter</label>
+                  <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Instagram</label>
                   <input
                     type="url"
                     value={formData.twitter}

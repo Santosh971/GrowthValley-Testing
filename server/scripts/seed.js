@@ -119,7 +119,6 @@ const sampleBlogs = [
   {
     title: 'Building Predictable Revenue Systems',
     slug: 'building-predictable-revenue-systems',
-    excerpt: 'Learn how to create a revenue engine that delivers consistent results quarter after quarter.',
     content: `# Building Predictable Revenue Systems
 
 In today's competitive B2B landscape, predictable revenue isn't just a goal—it's a necessity for sustainable growth.
@@ -150,7 +149,6 @@ Contact us to learn how we can help transform your revenue operations.`,
   {
     title: 'The Power of Sales Automation',
     slug: 'power-of-sales-automation',
-    excerpt: 'Discover how automation can transform your sales process and boost productivity.',
     content: `# The Power of Sales Automation
 
 Sales automation isn't about replacing your team—it's about empowering them to focus on what matters most.

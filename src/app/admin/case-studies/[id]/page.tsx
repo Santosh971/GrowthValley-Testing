@@ -3,54 +3,16 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { caseStudyAPI, mediaAPI } from '@/lib/admin-api';
+import { caseStudyAPI } from '@/lib/admin-api';
 import AdminLayout from '../../AdminLayout';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-// Helper to get full URL for images
-const getImageUrl = (url: string | undefined) => {
-  if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  return `${API_URL}${url}`;
-};
-
-const industries = ['SaaS', 'E-commerce', 'Healthcare', 'Finance', 'Education', 'Manufacturing', 'Real Estate', 'Technology', 'Other'];
-
-interface Result {
-  metric: string;
-  value: string;
-  description: string;
-}
-
-interface Testimonial {
-  quote: string;
-  author: string;
-  designation: string;
-  avatar: string;
-}
 
 interface CaseStudy {
   _id: string;
   title: string;
   slug: string;
-  industry: string;
-  clientName: string;
-  clientLogo: string;
-  featuredImage: string;
   challenge: string;
   solution: string;
-  results: Result[];
-  timeline: string;
-  technologies: string[];
-  testimonial: Testimonial;
-  featured: boolean;
   status: string;
-  seo: {
-    metaTitle: string;
-    metaDescription: string;
-    keywords: string[];
-  };
 }
 
 export default function EditCaseStudyPage() {
@@ -58,31 +20,21 @@ export default function EditCaseStudyPage() {
   const params = useParams();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
-    industry: 'SaaS',
-    clientName: '',
-    clientLogo: '',
-    featuredImage: '',
     challenge: '',
     solution: '',
-    results: [{ metric: '', value: '', description: '' }] as Result[],
-    timeline: '',
-    technologies: '',
-    testimonial: { quote: '', author: '', designation: '', avatar: '' } as Testimonial,
-    featured: false,
     status: 'published',
-    seo: {
-      metaTitle: '',
-      metaDescription: '',
-      keywords: '',
-    },
   });
+
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  };
 
   useEffect(() => {
     loadCaseStudy();
@@ -90,7 +42,6 @@ export default function EditCaseStudyPage() {
 
   const loadCaseStudy = async () => {
     try {
-      // Fetch by ID for admin - need to add getById to admin-api
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/case-studies/admin/${params.id}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
@@ -103,23 +54,9 @@ export default function EditCaseStudyPage() {
         setFormData({
           title: cs.title || '',
           slug: cs.slug || '',
-          industry: cs.industry || 'SaaS',
-          clientName: cs.clientName || '',
-          clientLogo: cs.clientLogo || '',
-          featuredImage: cs.featuredImage || '',
           challenge: cs.challenge || '',
           solution: cs.solution || '',
-          results: cs.results?.length > 0 ? cs.results : [{ metric: '', value: '', description: '' }],
-          timeline: cs.timeline || '',
-          technologies: cs.technologies?.join(', ') || '',
-          testimonial: cs.testimonial || { quote: '', author: '', designation: '', avatar: '' },
-          featured: cs.featured || false,
           status: cs.status || 'published',
-          seo: {
-            metaTitle: cs.seo?.metaTitle || '',
-            metaDescription: cs.seo?.metaDescription || '',
-            keywords: cs.seo?.keywords?.join(', ') || '',
-          },
         });
       }
     } catch (error) {
@@ -130,68 +67,17 @@ export default function EditCaseStudyPage() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'featuredImage' | 'clientLogo' | 'avatar') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const setUploadingField = field === 'featuredImage' ? setUploading : field === 'clientLogo' ? setUploadingLogo : setUploadingAvatar;
-    setUploadingField(true);
-
-    try {
-      const response = await mediaAPI.upload(file, 'case-studies');
-      if (response.success) {
-        if (field === 'avatar') {
-          setFormData(prev => ({
-            ...prev,
-            testimonial: { ...prev.testimonial, avatar: response.data.url }
-          }));
-        } else {
-          setFormData(prev => ({ ...prev, [field]: response.data.url }));
-        }
-      }
-    } catch (error: any) {
-      alert(error.message || 'Upload failed');
-    } finally {
-      setUploadingField(false);
-    }
-  };
-
-  const addResult = () => {
-    setFormData(prev => ({
-      ...prev,
-      results: [...prev.results, { metric: '', value: '', description: '' }]
-    }));
-  };
-
-  const removeResult = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      results: prev.results.filter((_, i) => i !== index)
-    }));
-  };
-
-  const updateResult = (index: number, field: keyof Result, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      results: prev.results.map((r, i) => i === index ? { ...r, [field]: value } : r)
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
 
     try {
       const data = {
-        ...formData,
-        technologies: formData.technologies.split(',').map(t => t.trim()).filter(Boolean),
-        results: formData.results.filter(r => r.metric && r.value),
-        testimonial: formData.testimonial.quote ? formData.testimonial : undefined,
-        seo: {
-          metaTitle: formData.seo.metaTitle || formData.title,
-          metaDescription: formData.seo.metaDescription || formData.challenge.substring(0, 160),
-          keywords: formData.seo.keywords.split(',').map(k => k.trim()).filter(Boolean),
-        },
+        title: formData.title,
+        slug: formData.slug,
+        challenge: formData.challenge,
+        solution: formData.solution,
+        status: formData.status,
       };
 
       const response = await caseStudyAPI.update(params.id as string, data);
@@ -230,131 +116,21 @@ export default function EditCaseStudyPage() {
           <div className="space-y-8">
             {/* Basic Info */}
             <div className="bg-white dark:bg-brand-grey-900 p-6 rounded-lg border border-brand-grey-200 dark:border-brand-grey-800">
-              <h2 className="text-lg font-semibold text-brand-black dark:text-white mb-4">Basic Information</h2>
-              
+              <h2 className="text-lg font-semibold text-brand-black dark:text-white mb-4">Case Study Details</h2>
+
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Title *</label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                      required
-                      className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Slug *</label>
-                    <input
-                      type="text"
-                      value={formData.slug}
-                      onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
-                      required
-                      pattern="[a-z0-9-]+"
-                      className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Industry *</label>
-                    <select
-                      value={formData.industry}
-                      onChange={(e) => setFormData(prev => ({ ...prev, industry: e.target.value }))}
-                      className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                    >
-                      {industries.map(ind => (
-                        <option key={ind} value={ind}>{ind}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Client Name *</label>
-                    <input
-                      type="text"
-                      value={formData.clientName}
-                      onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))}
-                      required
-                      className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Images */}
-            <div className="bg-white dark:bg-brand-grey-900 p-6 rounded-lg border border-brand-grey-200 dark:border-brand-grey-800">
-              <h2 className="text-lg font-semibold text-brand-black dark:text-white mb-4">Images</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Featured Image */}
                 <div>
-                  <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Featured Image</label>
-                  <div className="border-2 border-dashed border-brand-grey-300 dark:border-brand-grey-700 rounded-lg p-4 text-center">
-                    {formData.featuredImage ? (
-                      <div className="relative">
-                        <img src={getImageUrl(formData.featuredImage)} alt="Featured" className="w-full h-40 object-cover rounded" />
-                        <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, featuredImage: '' }))}
-                          className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ) : (
-                      <div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleImageUpload(e, 'featuredImage')}
-                          className="hidden"
-                          id="featuredImage"
-                        />
-                        <label htmlFor="featuredImage" className="cursor-pointer">
-                          <div className="text-brand-grey-500 dark:text-brand-grey-400">
-                            {uploading ? 'Uploading...' : 'Click to upload featured image'}
-                          </div>
-                        </label>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Client Logo */}
-                <div>
-                  <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Client Logo</label>
-                  <div className="border-2 border-dashed border-brand-grey-300 dark:border-brand-grey-700 rounded-lg p-4 text-center">
-                    {formData.clientLogo ? (
-                      <div className="relative">
-                        <img src={getImageUrl(formData.clientLogo)} alt="Client Logo" className="w-full h-40 object-contain rounded bg-white p-4" />
-                        <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, clientLogo: '' }))}
-                          className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ) : (
-                      <div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleImageUpload(e, 'clientLogo')}
-                          className="hidden"
-                          id="clientLogo"
-                        />
-                        <label htmlFor="clientLogo" className="cursor-pointer">
-                          <div className="text-brand-grey-500 dark:text-brand-grey-400">
-                            {uploadingLogo ? 'Uploading...' : 'Click to upload client logo'}
-                          </div>
-                        </label>
-                      </div>
-                    )}
-                  </div>
+                  <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Title *</label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => {
+                      const title = e.target.value;
+                      setFormData(prev => ({ ...prev, title, slug: generateSlug(title) }));
+                    }}
+                    required
+                    className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
+                  />
                 </div>
               </div>
             </div>
@@ -362,7 +138,7 @@ export default function EditCaseStudyPage() {
             {/* Content */}
             <div className="bg-white dark:bg-brand-grey-900 p-6 rounded-lg border border-brand-grey-200 dark:border-brand-grey-800">
               <h2 className="text-lg font-semibold text-brand-black dark:text-white mb-4">Content</h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Challenge *</label>
@@ -370,7 +146,7 @@ export default function EditCaseStudyPage() {
                     value={formData.challenge}
                     onChange={(e) => setFormData(prev => ({ ...prev, challenge: e.target.value }))}
                     required
-                    rows={4}
+                    rows={5}
                     className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
                   />
                 </div>
@@ -388,193 +164,20 @@ export default function EditCaseStudyPage() {
               </div>
             </div>
 
-            {/* Results */}
-            <div className="bg-white dark:bg-brand-grey-900 p-6 rounded-lg border border-brand-grey-200 dark:border-brand-grey-800">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-brand-black dark:text-white">Results</h2>
-                <button
-                  type="button"
-                  onClick={addResult}
-                  className="px-4 py-2 bg-accent text-brand-black rounded-lg text-sm font-medium hover:bg-accent-light transition-colors"
-                >
-                  + Add Result
-                </button>
-              </div>
-              
-              <div className="space-y-4">
-                {formData.results.map((result, index) => (
-                  <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-brand-grey-200 dark:border-brand-grey-700 rounded-lg">
-                    <input
-                      type="text"
-                      value={result.metric}
-                      onChange={(e) => updateResult(index, 'metric', e.target.value)}
-                      placeholder="Metric (e.g., Revenue)"
-                      className="px-3 py-2 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                    />
-                    <input
-                      type="text"
-                      value={result.value}
-                      onChange={(e) => updateResult(index, 'value', e.target.value)}
-                      placeholder="Value (e.g., 3x growth)"
-                      className="px-3 py-2 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                    />
-                    <input
-                      type="text"
-                      value={result.description}
-                      onChange={(e) => updateResult(index, 'description', e.target.value)}
-                      placeholder="Description"
-                      className="md:col-span-2 px-3 py-2 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                    />
-                    {formData.results.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeResult(index)}
-                        className="text-red-500 hover:text-red-700 text-sm"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Additional Info */}
-            <div className="bg-white dark:bg-brand-grey-900 p-6 rounded-lg border border-brand-grey-200 dark:border-brand-grey-800">
-              <h2 className="text-lg font-semibold text-brand-black dark:text-white mb-4">Additional Information</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Timeline</label>
-                  <input
-                    type="text"
-                    value={formData.timeline}
-                    onChange={(e) => setFormData(prev => ({ ...prev, timeline: e.target.value }))}
-                    className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Technologies</label>
-                  <input
-                    type="text"
-                    value={formData.technologies}
-                    onChange={(e) => setFormData(prev => ({ ...prev, technologies: e.target.value }))}
-                    className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                    placeholder="Comma separated"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial */}
-            <div className="bg-white dark:bg-brand-grey-900 p-6 rounded-lg border border-brand-grey-200 dark:border-brand-grey-800">
-              <h2 className="text-lg font-semibold text-brand-black dark:text-white mb-4">Client Testimonial (Optional)</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Quote</label>
-                  <textarea
-                    value={formData.testimonial.quote}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      testimonial: { ...prev.testimonial, quote: e.target.value }
-                    }))}
-                    rows={3}
-                    className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Author Name</label>
-                    <input
-                      type="text"
-                      value={formData.testimonial.author}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        testimonial: { ...prev.testimonial, author: e.target.value }
-                      }))}
-                      className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Designation</label>
-                    <input
-                      type="text"
-                      value={formData.testimonial.designation}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        testimonial: { ...prev.testimonial, designation: e.target.value }
-                      }))}
-                      className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Author Avatar</label>
-                  <div className="border-2 border-dashed border-brand-grey-300 dark:border-brand-grey-700 rounded-lg p-4 text-center">
-                    {formData.testimonial.avatar ? (
-                      <div className="relative inline-block">
-                        <img src={getImageUrl(formData.testimonial.avatar)} alt="Avatar" className="w-20 h-20 object-cover rounded-full" />
-                        <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({
-                            ...prev,
-                            testimonial: { ...prev.testimonial, avatar: '' }
-                          }))}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-xs"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ) : (
-                      <div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleImageUpload(e, 'avatar')}
-                          className="hidden"
-                          id="testimonialAvatar"
-                        />
-                        <label htmlFor="testimonialAvatar" className="cursor-pointer">
-                          <div className="text-brand-grey-500 dark:text-brand-grey-400">
-                            {uploadingAvatar ? 'Uploading...' : 'Click to upload avatar'}
-                          </div>
-                        </label>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Status */}
             <div className="bg-white dark:bg-brand-grey-900 p-6 rounded-lg border border-brand-grey-200 dark:border-brand-grey-800">
               <h2 className="text-lg font-semibold text-brand-black dark:text-white mb-4">Publishing</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Status</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                    className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="published">Published</option>
-                    <option value="archived">Archived</option>
-                  </select>
-                </div>
-                <div className="flex items-center pt-8">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.featured}
-                      onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
-                      className="w-5 h-5 rounded border-brand-grey-300 dark:border-brand-grey-600 text-accent focus:ring-accent"
-                    />
-                    <span className="text-sm font-medium text-brand-black dark:text-white">Mark as Featured</span>
-                  </label>
-                </div>
+
+              <div>
+                <label className="block text-sm font-medium text-brand-black dark:text-white mb-2">Status</label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                  className="w-full px-4 py-3 border border-brand-grey-200 dark:border-brand-grey-700 bg-white dark:bg-brand-grey-800 text-brand-black dark:text-white rounded-lg focus:outline-none focus:border-accent"
+                >
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                </select>
               </div>
             </div>
 

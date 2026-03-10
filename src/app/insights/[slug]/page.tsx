@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props) {
   const post = await getBlogPost(slug);
   return {
     title: post?.seo?.metaTitle || post?.title || "Insight",
-    description: post?.seo?.metaDescription || post?.excerpt,
+    description: post?.seo?.metaDescription || post?.content?.replace(/<[^>]*>/g, '').substring(0, 160),
   };
 }
 
@@ -111,7 +111,7 @@ export default async function BlogPostPage({ params }: Props) {
     <>
       <PageHeader
         title={post.title}
-        description={post.excerpt}
+        description={post.content?.replace(/<[^>]*>/g, '').substring(0, 200)}
         breadcrumb={[
           { label: "Insights", href: "/insights" },
           { label: post.title.substring(0, 30) + "...", href: `/insights/${post.slug}` },

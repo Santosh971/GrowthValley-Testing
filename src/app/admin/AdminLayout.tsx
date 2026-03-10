@@ -10,7 +10,7 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: '📊' },
   { name: 'Content', href: '/admin/content', icon: '📄' },
   { name: 'Blog Posts', href: '/admin/blog', icon: '📝' },
-  { name: 'Case Studies', href: '/admin/case-studies', icon: '💼' },
+  // { name: 'Case Studies', href: '/admin/case-studies', icon: '💼' },
   { name: 'Testimonials', href: '/admin/testimonials', icon: '⭐' },
   { name: 'Team', href: '/admin/team', icon: '👥' },
   { name: 'Enquiries', href: '/admin/enquiries', icon: '📧' },
@@ -109,11 +109,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     href={item.href}
                     target={item.external ? '_blank' : undefined}
                     onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg transition-colors text-sm lg:text-base ${
-                      isActive
+                    className={`flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg transition-colors text-sm lg:text-base ${isActive
                         ? 'bg-accent text-brand-black font-medium'
                         : 'text-brand-grey-300 hover:bg-brand-grey-800 hover:text-white'
-                    }`}
+                      }`}
                   >
                     <span>{item.icon}</span>
                     <span>{item.name}</span>
